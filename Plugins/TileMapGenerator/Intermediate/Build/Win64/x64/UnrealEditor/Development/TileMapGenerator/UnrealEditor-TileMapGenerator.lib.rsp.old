@@ -1,0 +1,19 @@
+/NOLOGO
+/errorReport:prompt
+/MACHINE:x64
+/SUBSYSTEM:WINDOWS
+/DEF
+/NAME:"UnrealEditor-TileMapGenerator.dll"
+/IGNORE:4221
+/NODEFAULTLIB
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Intermediate\Build\Win64\x64\MageTowerEditor\Development\UnrealEd\SharedPCH.UnrealEd.Project.ValApi.Cpp20.h.obj"
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\Module.TileMapGenerator.cpp.obj"
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\MapData.cpp.obj"
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\MapGeneratorComponent.cpp.obj"
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\MapRoom.cpp.obj"
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\RoomContentGenerator.cpp.obj"
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\RoomGenerator.cpp.obj"
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\TileComponent.cpp.obj"
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\TileMapGenerator.cpp.obj"
+"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\Default.rc2.res"
+/OUT:"C:\Users\tyres\Documents\Unreal Projects\MageTower\Plugins\TileMapGenerator\Intermediate\Build\Win64\x64\UnrealEditor\Development\TileMapGenerator\UnrealEditor-TileMapGenerator.lib"

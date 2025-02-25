@@ -1,0 +1,23 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "c:\\users\\tyres\\documents\\unreal projects\\magetower\\plugins\\tilemapgenerator\\source\\tilemapgenerator\\private\\roomgenerator.cpp",
+        "ProvidedModule": "",
+        "PCH": "c:\\users\\tyres\\documents\\unreal projects\\magetower\\intermediate\\build\\win64\\x64\\magetowereditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.cpp20.h.pch",
+        "Includes": [
+            "c:\\users\\tyres\\documents\\unreal projects\\magetower\\plugins\\tilemapgenerator\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\tilemapgenerator\\definitions.tilemapgenerator.h",
+            "c:\\users\\tyres\\documents\\unreal projects\\magetower\\plugins\\tilemapgenerator\\source\\tilemapgenerator\\public\\roomgenerator.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\coreuobject\\public\\uobject\\noexporttypes.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\coreuobject\\public\\uobject\\propertyaccessutil.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\coreuobject\\public\\serialization\\testundeclaredscriptstructobjectreferences.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\core\\public\\math\\unitconversion.h",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\core\\public\\math\\unitconversion.inl",
+            "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\core\\public\\internationalization\\polyglottextdata.h",
+            "c:\\users\\tyres\\documents\\unreal projects\\magetower\\plugins\\tilemapgenerator\\intermediate\\build\\win64\\unrealeditor\\inc\\tilemapgenerator\\uht\\roomgenerator.generated.h",
+            "c:\\users\\tyres\\documents\\unreal projects\\magetower\\plugins\\tilemapgenerator\\source\\tilemapgenerator\\public\\maproom.h",
+            "c:\\users\\tyres\\documents\\unreal projects\\magetower\\plugins\\tilemapgenerator\\intermediate\\build\\win64\\unrealeditor\\inc\\tilemapgenerator\\uht\\maproom.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}
