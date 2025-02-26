@@ -5,6 +5,7 @@
 #include "InputActionValue.h"
 #include "TileComponent.h"
 #include "TileMapFunctionLibrary.h"
+#include "SpellCastingComponent.h"
 
 // Sets default values for this component's properties
 UPathfindingComponent::UPathfindingComponent()
@@ -34,6 +35,12 @@ void UPathfindingComponent::StartMove(const FInputActionValue& _Value)
 	{
 		if(tile->GetComponentByClass<UTileComponent>()->mbIsWalkable && mbCanMove)
 		{
+			if(USpellCastingComponent* ownerSpellcastingComp = GetOwner()->GetComponentByClass<USpellCastingComponent>())
+			{
+				ownerSpellcastingComp->IncreaseMana();
+				ownerSpellcastingComp->RotateHand();
+			}
+			
 			DisableMovement();			
 			UTileMapFunctionLibrary::UnOccupyTile(GetOwner());
 			

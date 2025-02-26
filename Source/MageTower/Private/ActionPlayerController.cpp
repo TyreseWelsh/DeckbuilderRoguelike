@@ -8,6 +8,7 @@
 #include "InputAction.h"
 #include "InputActionValue.h"
 #include "MageTower/Public/PathfindingComponent.h"
+#include "SpellCastingComponent.h"
 
 // Print to screen ref
 //GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("NOT A TILE")));
@@ -26,6 +27,7 @@ void AActionPlayerController::BeginPlay()
 	}
 
 	mpActionPlayer = GetPawn();
+	mpPlayerSpellCastingComp = mpActionPlayer->GetComponentByClass<USpellCastingComponent>();
 }
 
 void AActionPlayerController::SetupInputComponent()
@@ -37,10 +39,10 @@ void AActionPlayerController::SetupInputComponent()
 		enhancedInputComponent->BindAction(mpMoveAction, ETriggerEvent::Started, this, &AActionPlayerController::MovePlayer);
 		
 		enhancedInputComponent->BindAction(mpCastAction, ETriggerEvent::Started, this, &AActionPlayerController::CastSpell);
-		enhancedInputComponent->BindAction(mpPickSpell1Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 1);
-		enhancedInputComponent->BindAction(mpPickSpell2Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 2);
-		enhancedInputComponent->BindAction(mpPickSpell3Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 3);
-		enhancedInputComponent->BindAction(mpPickSpell4Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 4);
+		enhancedInputComponent->BindAction(mpPickSpell1Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 0);
+		enhancedInputComponent->BindAction(mpPickSpell2Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 1);
+		enhancedInputComponent->BindAction(mpPickSpell3Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 2);
+		enhancedInputComponent->BindAction(mpPickSpell4Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 3);
 	}
 	else
 	{
@@ -60,10 +62,16 @@ void AActionPlayerController::MovePlayer(const FInputActionValue& _Value)
 // TODO: Work on SpellCasting component to cast spells
 void AActionPlayerController::CastSpell(const FInputActionValue& _Value)
 {
-	GEngine->AddOnScreenDebugMessage(0, 1.f, FColor::Cyan, FString::Printf(TEXT("%s: Cast spell!"), *GetName()));
+	if(mpPlayerSpellCastingComp)
+	{
+		mpPlayerSpellCastingComp->CastSpell();
+	}
 }
 
-void AActionPlayerController::PickSpell(const FInputActionValue& _Value, int _SpellNum)
+void AActionPlayerController::PickSpell(const FInputActionValue& _Value, int _HandIndex)
 {
-	GEngine->AddOnScreenDebugMessage(1, 1.f, FColor::Cyan, FString::Printf(TEXT("%s: Picked spell %i!"), *GetName(), _SpellNum));
+	if(mpPlayerSpellCastingComp)
+	{
+		mpPlayerSpellCastingComp->SelectSpell(_HandIndex);
+	}
 }

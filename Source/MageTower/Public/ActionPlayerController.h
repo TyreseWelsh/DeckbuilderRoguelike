@@ -9,6 +9,8 @@
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class USpellCastingComponent;
+
 /**
  * 
  */
@@ -36,7 +38,8 @@ class MAGETOWER_API AActionPlayerController : public APlayerController
 	UInputAction* mpPickSpell4Action;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Player, meta = (AllowPrivateAccess = "true"))
-	APawn* mpActionPlayer;
+	TObjectPtr<APawn> mpActionPlayer;
+	TObjectPtr<USpellCastingComponent> mpPlayerSpellCastingComp;
 	
 public:
 	virtual void BeginPlay() override;
@@ -45,5 +48,5 @@ public:
 private:
 	void MovePlayer(const FInputActionValue& _Value);
 	void CastSpell(const FInputActionValue& _Value);
-	void PickSpell(const FInputActionValue& _Value, int _SpellNum);
+	void PickSpell(const FInputActionValue& _Value, int _HandIndex);
 };
