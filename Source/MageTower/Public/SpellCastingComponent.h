@@ -8,6 +8,14 @@
 
 class USpellCard;
 
+UENUM(BlueprintType)
+enum ECastingState : uint8
+{
+	None		UMETA(DisplayName = "None"),
+	Aiming		UMETA(DisplayName = "Aiming"),
+	Casting		UMETA(DisplayName = "Casting"),
+};
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class MAGETOWER_API USpellCastingComponent : public UActorComponent
 {
@@ -33,8 +41,12 @@ public:
 	void SelectSpell(int _HandIndex);
 	void CastSpell();
 	void IncreaseMana();
+	void SetCastDirection(FVector2D _CastDirection);
+	void CancelSpellCast();
 
-	int mCurrentSpellIndex = 0;
+	ECastingState GetCastState() const { return mCurrentCastingState; }
+	
+	int mCurrentSpellIndex = -1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<USpellCard*> mpHandSpells;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -53,4 +65,7 @@ protected:
 	int mMAX_HAND_SIZE = 4;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	int mDeckSize = 20;
+
+	ECastingState mCurrentCastingState = ECastingState::None;
+	FVector mCastDirection;
 };

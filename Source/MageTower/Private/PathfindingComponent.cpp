@@ -24,31 +24,48 @@ void UPathfindingComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+	ownerSpellcastingComp = GetOwner()->GetComponentByClass<USpellCastingComponent>();
 }
 
 void UPathfindingComponent::StartMove(const FInputActionValue& _Value)
 {
 	FVector2D moveDirection = _Value.Get<FVector2D>();
+	FVector newLocation;
 
-	FVector newLocation = FVector(GetOwner()->GetActorLocation().X + moveDirection.Y * mMoveDistance,GetOwner()->GetActorLocation().Y + moveDirection.X * mMoveDistance, GetOwner()->GetActorLocation().Z);
-	if(AActor* tile = UTileMapFunctionLibrary::GetBelowTile(newLocation, GetWorld()))
+	if(ownerSpellcastingComp)
 	{
-		if(tile->GetComponentByClass<UTileComponent>()->mbIsWalkable && mbCanMove)
+		switch(ownerSpellcastingComp->GetCastState())
 		{
-			if(USpellCastingComponent* ownerSpellcastingComp = GetOwner()->GetComponentByClass<USpellCastingComponent>())
-			{
-				ownerSpellcastingComp->IncreaseMana();
-				ownerSpellcastingComp->RotateHand();
-			}
-			
-			DisableMovement();			
-			UTileMapFunctionLibrary::UnOccupyTile(GetOwner());
-			
-			// Start timer until player can move again
-			mMoveDelegate.BindUFunction(this, "Move", GetOwner()->GetActorLocation(), newLocation);
-			GetWorld()->GetTimerManager().SetTimer(mMoveTimer, mMoveDelegate, mMoveRate, true);
-			
-			UTileMapFunctionLibrary::OccupyTile(GetOwner());
+			case(ECastingState::None):
+				newLocation = FVector(GetOwner()->GetActorLocation().X + moveDirection.Y * mMoveDistance,GetOwner()->GetActorLocation().Y + moveDirection.X * mMoveDistance, GetOwner()->GetActorLocation().Z);
+				if(AActor* tile = UTileMapFunctionLibrary::GetBelowTile(newLocation, GetWorld()))
+				{
+					if(tile->GetComponentByClass<UTileComponent>()->mbIsWalkable && mbCanMove)
+					{
+						if(ownerSpellcastingComp)
+						{
+							ownerSpellcastingComp->IncreaseMana();
+							ownerSpellcastingComp->RotateHand();
+						}
+				
+						DisableMovement();			
+						UTileMapFunctionLibrary::UnOccupyTile(GetOwner());
+				
+						// Start timer until player can move again
+						mMoveDelegate.BindUFunction(this, "Move", GetOwner()->GetActorLocation(), newLocation);
+						GetWorld()->GetTimerManager().SetTimer(mMoveTimer, mMoveDelegate, mMoveRate, true);
+				
+						UTileMapFunctionLibrary::OccupyTile(GetOwner());
+					}
+				}
+				break;
+			case(ECastingState::Aiming):
+				ownerSpellcastingComp->SetCastDirection(moveDirection);
+				break;
+			case(ECastingState::Casting):
+				break;
+			default:
+				break;
 		}
 	}
 }

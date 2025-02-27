@@ -39,6 +39,8 @@ void AActionPlayerController::SetupInputComponent()
 		enhancedInputComponent->BindAction(mpMoveAction, ETriggerEvent::Started, this, &AActionPlayerController::MovePlayer);
 		
 		enhancedInputComponent->BindAction(mpCastAction, ETriggerEvent::Started, this, &AActionPlayerController::CastSpell);
+		enhancedInputComponent->BindAction(mpCancelCastAction, ETriggerEvent::Started, this, &AActionPlayerController::CancelCast);
+
 		enhancedInputComponent->BindAction(mpPickSpell1Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 0);
 		enhancedInputComponent->BindAction(mpPickSpell2Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 1);
 		enhancedInputComponent->BindAction(mpPickSpell3Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 2);
@@ -65,6 +67,14 @@ void AActionPlayerController::CastSpell(const FInputActionValue& _Value)
 	if(mpPlayerSpellCastingComp)
 	{
 		mpPlayerSpellCastingComp->CastSpell();
+	}
+}
+
+void AActionPlayerController::CancelCast(const FInputActionValue& _Value)
+{
+	if(mpPlayerSpellCastingComp)
+	{
+		mpPlayerSpellCastingComp->CancelSpellCast();
 	}
 }
 

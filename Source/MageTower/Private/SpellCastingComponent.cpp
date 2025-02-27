@@ -122,6 +122,7 @@ void USpellCastingComponent::SelectSpell(int _HandIndex)
 	if(_HandIndex >= 0 && _HandIndex < mMAX_HAND_SIZE)
 	{
 		GEngine->AddOnScreenDebugMessage(1, 1.5f, FColor::Green, FString::Printf(TEXT("Picked spell %i!"), _HandIndex + 1));
+		mCurrentCastingState = ECastingState::Aiming;
 		mCurrentSpellIndex = _HandIndex;
 	}
 }
@@ -147,5 +148,30 @@ void USpellCastingComponent::IncreaseMana()
 	{
 		mCurrentMana = mMAX_MANA;
 	}
+}
+
+void USpellCastingComponent::SetCastDirection(FVector2D _CastDirection)
+{
+	mCastDirection = FVector(_CastDirection.Y, _CastDirection.X, 0);
+	
+	FHitResult hitResult;
+	FVector traceStart = GetOwner()->GetActorLocation();
+	traceStart.Z += 50.f;
+	FVector traceEnd = traceStart + mCastDirection * 300.f;
+	GEngine->AddOnScreenDebugMessage(2831, 2.0f, FColor::Green, FString::Printf(TEXT("TraceEnd: x=%f , y=%f , z=%f"), traceEnd.X, traceEnd.Y, traceEnd.Z));
+	
+	GetWorld()->LineTraceSingleByChannel(hitResult, traceStart, traceEnd, ECC_Visibility);
+	DrawDebugLine(GetWorld(), traceEnd, FVector(traceEnd.X, traceEnd.Y, traceEnd.Z + 1000), FColor::Red, false, 15.f, 0, 2.f);
+	// We need to somehow get all tiles along this path (jump in cast direction in intervals of the tile size until we reach the required distance
+	// Then at each point we GetBelowTile() and store these somewhere so that the spells "pathfinding" can access them
+	// For each point along the path, the spell can choose what to do, either just move to the next or do something on this tile
+	// In the spell, for each tile in the path, we will also be checking if its occupied to apply damage if damageable
+	// and choosing if we want to stop the spell there or keep going depending on its interaction with the occupying object.
+}
+
+void USpellCastingComponent::CancelSpellCast()
+{
+	mCurrentSpellIndex = -1;
+	mCurrentCastingState = ECastingState::None;
 }
 

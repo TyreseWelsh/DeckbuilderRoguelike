@@ -7,6 +7,7 @@
 #include "PathfindingComponent.generated.h"
 
 struct FInputActionValue;
+class USpellCastingComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MAGETOWER_API UPathfindingComponent : public UActorComponent
@@ -45,4 +46,6 @@ private:
 	bool mbCanMove = true;
 	FTimerHandle mMoveTimer;
 	FTimerDelegate mMoveDelegate;
+
+	TObjectPtr<USpellCastingComponent> ownerSpellcastingComp;
 };
