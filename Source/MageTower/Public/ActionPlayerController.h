@@ -9,6 +9,7 @@
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class AActionPawn;
 class USpellCastingComponent;
 
 /**
@@ -41,7 +42,7 @@ class MAGETOWER_API AActionPlayerController : public APlayerController
 	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Player, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<APawn> mpActionPlayer;
+	TObjectPtr<AActionPawn> mpActionPlayer;
 	TObjectPtr<USpellCastingComponent> mpPlayerSpellCastingComp;
 	
 public:

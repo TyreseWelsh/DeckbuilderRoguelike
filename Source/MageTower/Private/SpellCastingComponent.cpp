@@ -27,15 +27,24 @@ void USpellCastingComponent::BeginPlay()
 
 void USpellCastingComponent::InitialiseDeck()
 {
-	for(int i = 0; i < mDeckSize; i++)
+	// Initialising owner's deck at start of play
+	for(int i = 0; i < mpInitialDeckData.Num(); i++)
 	{
-		if(USpellCard* spellCard = NewObject<USpellCard>())
+		USpellCard* currentSpellCard = NewObject<USpellCard>(this, mpInitialDeckData[i]);
+		if(currentSpellCard)
 		{
-			spellCard->SetSpellId(i);
-			mpDeckSpells.Add(spellCard);
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Adding SpellCard %i to deck"), spellCard->GetSpellId()));
+			currentSpellCard->SetSpellId(i);
+			mpDeckSpells.Add(currentSpellCard);
 		}
 	}
+
+	// NOTE: Should actually only be called when entering combat
+	InitaliseCombatDeck();
+}
+
+void USpellCastingComponent::InitaliseCombatDeck()
+{
+	mpCombatDeckSpells = mpDeckSpells;
 
 	mpHandSpells.SetNum(mMAX_HAND_SIZE);
 	for(int i = 0; i < mpHandSpells.Num(); i++)
@@ -58,7 +67,7 @@ void USpellCastingComponent::RotateHand()
 	{
 		mpHandSpells[i] = mpHandSpells[i + 1];
 	}
-	UE_LOG(LogTemp, Display, TEXT("Drawing spell %i"), mpDeckSpells[0]->GetSpellId());
+	UE_LOG(LogTemp, Display, TEXT("Drawing spell %i"), mpCombatDeckSpells[0]->GetSpellId());
 	DrawTopDeck(mMAX_HAND_SIZE - 1);
 	
 	UE_LOG(LogTemp, Display, TEXT("Stop rotating hand..."));
@@ -84,10 +93,10 @@ void USpellCastingComponent::DrawTopDeck(int _NewSpellIndex)
 	if(USpellCard* topDeck = GetTopDeck())
 	{
 		mpHandSpells[_NewSpellIndex] = topDeck;
-		mpDeckSpells.RemoveAt(0);
+		mpCombatDeckSpells.RemoveAt(0);
 
 		// After successfully adding from deck to hand, we check if the deck is empty as we will have to refill it
-		if(mpDeckSpells.IsEmpty())
+		if(mpCombatDeckSpells.IsEmpty())
 		{
 			RecycleDiscardPile();
 		}
@@ -96,9 +105,9 @@ void USpellCastingComponent::DrawTopDeck(int _NewSpellIndex)
 
 USpellCard* USpellCastingComponent::GetTopDeck() const
 {
-	if (mpDeckSpells.Num() > 0)
+	if (mpCombatDeckSpells.Num() > 0)
 	{
-		return mpDeckSpells[0];
+		return mpCombatDeckSpells[0];
 	}
 
 	return nullptr;
@@ -112,7 +121,7 @@ void USpellCastingComponent::RecycleDiscardPile()
 		int randDiscardIndex = FMath::RandRange(0, mpDiscardSpells.Num() - 1);
 		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Magenta, FString::Printf(TEXT("Recycling spell%i into deck!"), mpDiscardSpells[randDiscardIndex]->GetSpellId()));
 
-		mpDeckSpells.Add(mpDiscardSpells[randDiscardIndex]);
+		mpCombatDeckSpells.Add(mpDiscardSpells[randDiscardIndex]);
 		mpDiscardSpells.RemoveAt(randDiscardIndex);
 	}
 }
@@ -136,7 +145,7 @@ void USpellCastingComponent::CastSpell()
 			GEngine->AddOnScreenDebugMessage(0, 3.f, FColor::Cyan, FString::Printf(TEXT("%s: Casting spell %i!"), *GetOwner()->GetName(), mpHandSpells[mCurrentSpellIndex]->GetSpellId()));
 			mCurrentMana -= mpHandSpells[mCurrentSpellIndex]->GetManaCost();
 			CycleHand(mCurrentSpellIndex, mCurrentSpellIndex);
-			mCurrentSpellIndex = -1;
+			CancelSpellCast();
 		}
 	}
 }
@@ -152,21 +161,40 @@ void USpellCastingComponent::IncreaseMana()
 
 void USpellCastingComponent::SetCastDirection(FVector2D _CastDirection)
 {
+	if(_CastDirection == FVector2D::ZeroVector or _CastDirection == FVector2D::One() or (mCurrentSpellIndex < 0 && mCurrentSpellIndex > mMAX_HAND_SIZE))
+	{
+		return;
+	}
+	
 	mCastDirection = FVector(_CastDirection.Y, _CastDirection.X, 0);
+	int tileSize = 100;
+	if(IsValid(mpHandSpells[mCurrentSpellIndex]))
+	{
+		int spellRange = mpHandSpells[mCurrentSpellIndex]->GetRange();
+		int spellWidth = mpHandSpells[mCurrentSpellIndex]->GetWidth();
 	
-	FHitResult hitResult;
-	FVector traceStart = GetOwner()->GetActorLocation();
-	traceStart.Z += 50.f;
-	FVector traceEnd = traceStart + mCastDirection * 300.f;
-	GEngine->AddOnScreenDebugMessage(2831, 2.0f, FColor::Green, FString::Printf(TEXT("TraceEnd: x=%f , y=%f , z=%f"), traceEnd.X, traceEnd.Y, traceEnd.Z));
-	
-	GetWorld()->LineTraceSingleByChannel(hitResult, traceStart, traceEnd, ECC_Visibility);
-	DrawDebugLine(GetWorld(), traceEnd, FVector(traceEnd.X, traceEnd.Y, traceEnd.Z + 1000), FColor::Red, false, 15.f, 0, 2.f);
-	// We need to somehow get all tiles along this path (jump in cast direction in intervals of the tile size until we reach the required distance
-	// Then at each point we GetBelowTile() and store these somewhere so that the spells "pathfinding" can access them
-	// For each point along the path, the spell can choose what to do, either just move to the next or do something on this tile
-	// In the spell, for each tile in the path, we will also be checking if its occupied to apply damage if damageable
-	// and choosing if we want to stop the spell there or keep going depending on its interaction with the occupying object.
+		FVector startPos = GetOwner()->GetActorLocation();
+		for(int cRange = 1; cRange <= spellRange; cRange++)
+		{
+			for (int cWidth = -spellWidth; cWidth <= spellWidth; cWidth++)
+			{
+				FVector affectedTilePos;
+				if(mCastDirection.X != 0 && mCastDirection.Y == 0) 
+				{
+					affectedTilePos.X = startPos.X + mCastDirection.X * (cRange * tileSize);
+					affectedTilePos.Y = startPos.Y + cWidth * tileSize;
+				}
+				else if(mCastDirection.X == 0 && mCastDirection.Y != 0)
+				{
+					affectedTilePos.X = startPos.X + cWidth * tileSize;
+					affectedTilePos.Y = startPos.Y + mCastDirection.Y * (cRange * tileSize);
+				}
+
+				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("x: %f , y: %f"), affectedTilePos.X, affectedTilePos.Y));
+				DrawDebugLine(GetWorld(), affectedTilePos, FVector(affectedTilePos.X, affectedTilePos.Y, affectedTilePos.Z + 1000), FColor::Red, false, 1.f, 0, 2.f);
+			}
+		}	
+	}
 }
 
 void USpellCastingComponent::CancelSpellCast()

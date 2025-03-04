@@ -29,6 +29,7 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	void InitialiseDeck();
+	void InitaliseCombatDeck();					// Functionality will most likely be moved somwhere else at some point
 	
 public:
 	void RotateHand();
@@ -45,12 +46,19 @@ public:
 	void CancelSpellCast();
 
 	ECastingState GetCastState() const { return mCurrentCastingState; }
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<TSubclassOf<USpellCard>> mpInitialDeckData;
 	
 	int mCurrentSpellIndex = -1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<USpellCard> mpInheritedSpell;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<USpellCard*> mpHandSpells;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<USpellCard*> mpDeckSpells;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<USpellCard*> mpCombatDeckSpells;		// Current deck spells during combat
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<USpellCard*> mpDiscardSpells;
 	

@@ -3,10 +3,14 @@
 
 //#include "ActionPlayerController.h"
 #include "MageTower/Public/ActionPlayerController.h"
+
+#include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "InputActionValue.h"
+#include "ActionPawn.h"
+#include "AbilitySystemInterface.h"
 #include "MageTower/Public/PathfindingComponent.h"
 #include "SpellCastingComponent.h"
 
@@ -26,7 +30,7 @@ void AActionPlayerController::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "ERROR: Cant get Enhanced Input Subsystem");
 	}
 
-	mpActionPlayer = GetPawn();
+	mpActionPlayer = Cast<AActionPawn>(GetPawn());
 	mpPlayerSpellCastingComp = mpActionPlayer->GetComponentByClass<USpellCastingComponent>();
 }
 
