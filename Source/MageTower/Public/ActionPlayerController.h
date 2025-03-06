@@ -9,7 +9,7 @@
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-class AActionPawn;
+class APlayerPawn;
 class USpellCastingComponent;
 
 /**
@@ -39,10 +39,13 @@ class MAGETOWER_API AActionPlayerController : public APlayerController
 	UInputAction* mpPickSpell3Action;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* mpPickSpell4Action;
-	
+
+	// Temporary combat start until I get to actual combat
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* mpStartCombatAction;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Player, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<AActionPawn> mpActionPlayer;
+	TObjectPtr<APlayerPawn> mpActionPlayer;
 	TObjectPtr<USpellCastingComponent> mpPlayerSpellCastingComp;
 	
 public:
@@ -54,4 +57,7 @@ private:
 	void CastSpell(const FInputActionValue& _Value);
 	void CancelCast(const FInputActionValue& _Value);
 	void PickSpell(const FInputActionValue& _Value, int _HandIndex);
+
+	// Temp StartCombat
+	void StartPlayerCombat();
 };

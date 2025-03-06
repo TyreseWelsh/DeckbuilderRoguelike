@@ -28,6 +28,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int mBaseManaCost;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString mSpellDescription;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int mBaseDamage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int mBaseRange;

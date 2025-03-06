@@ -37,7 +37,7 @@ private:
 	void Move(FVector _StartLocation, FVector _NewLocation);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float mMoveDistance;
+	float mMoveDistance = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Move Animation", meta = (AllowPrivateAccess = "true"))
 	float mMoveRate = 0.02f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Move Animation", meta = (AllowPrivateAccess = "true"))

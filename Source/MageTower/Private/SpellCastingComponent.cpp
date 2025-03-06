@@ -4,6 +4,7 @@
 #include "SpellCastingComponent.h"
 
 #include "SpellCard.h"
+#include "HandSpellsWidget.h"
 
 // Sets default values for this component's properties
 USpellCastingComponent::USpellCastingComponent()
@@ -22,7 +23,6 @@ void USpellCastingComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	InitialiseDeck();
 }
 
 void USpellCastingComponent::InitialiseDeck()
@@ -37,40 +37,40 @@ void USpellCastingComponent::InitialiseDeck()
 			mpDeckSpells.Add(currentSpellCard);
 		}
 	}
-
-	// NOTE: Should actually only be called when entering combat
-	InitaliseCombatDeck();
 }
 
-void USpellCastingComponent::InitaliseCombatDeck()
+void USpellCastingComponent::InitaliseCombatDeck(UHandSpellsWidget* _HandUI)
 {
+	mCurrentMana = mMAX_MANA / 2;
 	mpCombatDeckSpells = mpDeckSpells;
 
-	mpHandSpells.SetNum(mMAX_HAND_SIZE);
-	for(int i = 0; i < mpHandSpells.Num(); i++)
+	mpHandUI = _HandUI;
+	if(mpHandUI)
 	{
-		DrawTopDeck(i);
-		GEngine->AddOnScreenDebugMessage(8195, 1.5f, FColor::Orange, FString::Printf(TEXT("Filling hand...")));
+		mpHandUI->Init();
+		
+		mpHandSpells.SetNum(mMAX_HAND_SIZE);
+		for(int i = 0; i < mpHandSpells.Num(); i++)
+		{
+			DrawTopDeck(i);
+			GEngine->AddOnScreenDebugMessage(8195, 1.5f, FColor::Orange, FString::Printf(TEXT("Filling hand...")));
+		}
 	}
-
-	mCurrentMana = mMAX_MANA;
 }
 
 void USpellCastingComponent::RotateHand()
 {
 	mCurrentSpellIndex = -1;
-	UE_LOG(LogTemp, Display, TEXT("Start rotating hand..."));
 	
-	UE_LOG(LogTemp, Display, TEXT("Discarding spell %i"), mpHandSpells[0]->GetSpellId());
 	DiscardSpell(0);
+	
 	for(int i = 0; i < mMAX_HAND_SIZE - 1; i++)
 	{
 		mpHandSpells[i] = mpHandSpells[i + 1];
+		UpdateHandCardUI(mpHandUI, i);
 	}
-	UE_LOG(LogTemp, Display, TEXT("Drawing spell %i"), mpCombatDeckSpells[0]->GetSpellId());
-	DrawTopDeck(mMAX_HAND_SIZE - 1);
 	
-	UE_LOG(LogTemp, Display, TEXT("Stop rotating hand..."));
+	DrawTopDeck(mMAX_HAND_SIZE - 1);
 }
 
 void USpellCastingComponent::CycleHand(int _DiscardIndex, int _NewSpellIndex)
@@ -93,6 +93,7 @@ void USpellCastingComponent::DrawTopDeck(int _NewSpellIndex)
 	if(USpellCard* topDeck = GetTopDeck())
 	{
 		mpHandSpells[_NewSpellIndex] = topDeck;
+		UpdateHandCardUI(mpHandUI, _NewSpellIndex);
 		mpCombatDeckSpells.RemoveAt(0);
 
 		// After successfully adding from deck to hand, we check if the deck is empty as we will have to refill it
@@ -203,3 +204,10 @@ void USpellCastingComponent::CancelSpellCast()
 	mCurrentCastingState = ECastingState::None;
 }
 
+void USpellCastingComponent::UpdateHandCardUI(UHandSpellsWidget* _HandUI, int _CardNum)
+{
+	if(mpHandSpells.Num() > 0)
+	{
+		_HandUI->UpdateCardUI(_CardNum, mpHandSpells[_CardNum]->GetSpellData());
+	}
+}

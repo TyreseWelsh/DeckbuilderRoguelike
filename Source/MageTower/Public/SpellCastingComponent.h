@@ -7,6 +7,7 @@
 #include "SpellCastingComponent.generated.h"
 
 class USpellCard;
+class UHandSpellsWidget;
 
 UENUM(BlueprintType)
 enum ECastingState : uint8
@@ -25,11 +26,12 @@ public:
 	// Sets default values for this component's properties
 	USpellCastingComponent();
 
+	void InitialiseDeck();
+	void InitaliseCombatDeck(UHandSpellsWidget* _HandUI);					// Functionality will most likely be moved somwhere else at some point
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	void InitialiseDeck();
-	void InitaliseCombatDeck();					// Functionality will most likely be moved somwhere else at some point
 	
 public:
 	void RotateHand();
@@ -45,6 +47,10 @@ public:
 	void SetCastDirection(FVector2D _CastDirection);
 	void CancelSpellCast();
 
+	void UpdateHandCardUI(UHandSpellsWidget* _HandUI, int _CardNum);
+	void InitialiseHandUI(UHandSpellsWidget* _HandUI);
+	
+	int GetCurrentMana() const { return mCurrentMana; }
 	ECastingState GetCastState() const { return mCurrentCastingState; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -76,4 +82,6 @@ protected:
 
 	ECastingState mCurrentCastingState = ECastingState::None;
 	FVector mCastDirection;
+
+	TObjectPtr<UHandSpellsWidget> mpHandUI;
 };

@@ -9,7 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "InputActionValue.h"
-#include "ActionPawn.h"
+#include "PlayerPawn.h"
 #include "AbilitySystemInterface.h"
 #include "MageTower/Public/PathfindingComponent.h"
 #include "SpellCastingComponent.h"
@@ -30,7 +30,7 @@ void AActionPlayerController::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, "ERROR: Cant get Enhanced Input Subsystem");
 	}
 
-	mpActionPlayer = Cast<AActionPawn>(GetPawn());
+	mpActionPlayer = Cast<APlayerPawn>(GetPawn());
 	mpPlayerSpellCastingComp = mpActionPlayer->GetComponentByClass<USpellCastingComponent>();
 }
 
@@ -49,6 +49,8 @@ void AActionPlayerController::SetupInputComponent()
 		enhancedInputComponent->BindAction(mpPickSpell2Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 1);
 		enhancedInputComponent->BindAction(mpPickSpell3Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 2);
 		enhancedInputComponent->BindAction(mpPickSpell4Action, ETriggerEvent::Started, this, &AActionPlayerController::PickSpell, 3);
+
+		enhancedInputComponent->BindAction(mpStartCombatAction, ETriggerEvent::Started, this, &AActionPlayerController::StartPlayerCombat);
 	}
 	else
 	{
@@ -87,5 +89,13 @@ void AActionPlayerController::PickSpell(const FInputActionValue& _Value, int _Ha
 	if(mpPlayerSpellCastingComp)
 	{
 		mpPlayerSpellCastingComp->SelectSpell(_HandIndex);
+	}
+}
+
+void AActionPlayerController::StartPlayerCombat()
+{
+	if(mpActionPlayer)
+	{
+		mpActionPlayer->StartCombat();
 	}
 }
