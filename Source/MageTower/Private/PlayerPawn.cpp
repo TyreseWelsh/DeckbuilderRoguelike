@@ -3,10 +3,12 @@
 
 #include "PlayerPawn.h"
 
+#include "ManaWidget.h"
 #include "Camera/CameraComponent.h"
 #include "PathfindingComponent.h"
 #include "SpellCastingComponent.h"
 #include "PlayerHUDWidget.h"
+#include "ManaWidget.h"
 
 APlayerPawn::APlayerPawn()
 {
@@ -37,6 +39,7 @@ void APlayerPawn::BeginPlay()
 		mpPlayerHUD = CreateWidget<UPlayerHUDWidget>(GetWorld(), playerHUDClass);
 		if(mpPlayerHUD)
 		{
+			mpPlayerHUD->manaBar->InitMana();
 			mpPlayerHUD->AddToViewport();
 		}
 	}
@@ -46,7 +49,7 @@ void APlayerPawn::StartCombat()
 {
 	if(mpPlayerHUD)
 	{
-		mpSpellCastingComp->InitaliseCombatDeck(mpPlayerHUD->handSpellCards);
+		mpSpellCastingComp->InitaliseCombatDeck(mpPlayerHUD);
 		mpPlayerHUD->EnableHand();
 	}
 }

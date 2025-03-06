@@ -5,7 +5,7 @@
 
 #include "Components/Image.h"
 
-void UManaWidget::Init()
+void UManaWidget::InitMana()
 {
 	// Adding pointers to mana point widgets to array so they can be referenced easily elsewhere
 	manaPoints.Add(mana1);
@@ -28,11 +28,13 @@ void UManaWidget::SetMana(int _CurrentMana)
 		{
 			if(i < _CurrentMana)
 			{
-				manaPoints[i]->SetOpacity(1.f);
+				//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("HAND SPELL CARD WIDGET INVALID")));
+				manaPoints[i]->SetRenderOpacity(1.f);
 			}
 			else
 			{
-				manaPoints[i]->SetOpacity(0.2f);
+				//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("HAND SPELL CARD WIDGET INVALID")));
+				manaPoints[i]->SetRenderOpacity(0.5f);
 			}
 		}
 	}

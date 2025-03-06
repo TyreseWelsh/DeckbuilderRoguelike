@@ -4,16 +4,15 @@
 #include "SpellCard.h"
 #include "SpellData.h"
 
-void USpellCard::Init()
+/*void USpellCard::InitCardValues()
 {
-	mpBaseSpellData = NewObject<USpellData>();
 	if(mpBaseSpellData)
 	{
-		mSpellId = mpBaseSpellData->mSpellId;
+		mSpellName = mpBaseSpellData->mSpellName;
 		mManaCost = mpBaseSpellData->mBaseManaCost;
+		mSpellDescription = mpBaseSpellData->mSpellDescription;
 		mDamage = mpBaseSpellData->mBaseDamage;
 		mRange = mpBaseSpellData->mBaseRange;
 		mWidth = mpBaseSpellData->mBaseWidth;
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("Spell width= %i"), mWidth));
 	}
-}
+}*/

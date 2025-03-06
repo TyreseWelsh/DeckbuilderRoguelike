@@ -17,7 +17,7 @@ class MAGETOWER_API UManaWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void Init();
+	void InitMana();
 	void SetMana(int _CurrentMana);
 	
 protected:

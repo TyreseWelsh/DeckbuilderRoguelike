@@ -7,6 +7,7 @@
 #include "SpellCastingComponent.generated.h"
 
 class USpellCard;
+class UPlayerHUDWidget;
 class UHandSpellsWidget;
 
 UENUM(BlueprintType)
@@ -27,14 +28,13 @@ public:
 	USpellCastingComponent();
 
 	void InitialiseDeck();
-	void InitaliseCombatDeck(UHandSpellsWidget* _HandUI);					// Functionality will most likely be moved somwhere else at some point
+	void InitaliseCombatDeck(UPlayerHUDWidget* _HandUI);					// Functionality will most likely be moved somwhere else at some point
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
 public:
-	void Shuffle();
 	void RotateHand();
 	void CycleHand(int _DiscardIndex, int _NewSpellIndex);
 	void DiscardSpell(int _DiscardIndex);
@@ -44,14 +44,17 @@ public:
 
 	void SelectSpell(int _HandIndex);
 	void CastSpell();
-	void IncreaseMana();
+	void IncreaseMana(int _IncreaseAmount);
+	void DecreaseMana(int _DecreaseAmount);
 	void SetCastDirection(FVector2D _CastDirection);
 	void CancelSpellCast();
 
-	void UpdateHandCardUI(UHandSpellsWidget* _HandUI, int _CardNum);
-	void InitialiseHandUI(UHandSpellsWidget* _HandUI);
-	
+	void UpdateHandCardUI(UPlayerHUDWidget* _HandUI, int _CardNum);
+	//void InitialiseHandUI(UHandSpellsWidget* _HandUI);
+
+	void SetCurrentMana(int _CurrentMana);
 	int GetCurrentMana() const { return mCurrentMana; }
+	int GetManaPerTurn() const { return mManaPerTurn; }
 	ECastingState GetCastState() const { return mCurrentCastingState; }
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -71,7 +74,7 @@ public:
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
-	int mMAX_MANA = 9;
+	int mMAX_MANA = 10;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
 	int mCurrentMana;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess=true))
@@ -84,5 +87,5 @@ protected:
 	ECastingState mCurrentCastingState = ECastingState::None;
 	FVector mCastDirection;
 
-	TObjectPtr<UHandSpellsWidget> mpHandUI;
+	TObjectPtr<UPlayerHUDWidget> mpPlayerHUD;
 };

@@ -44,7 +44,7 @@ void UPathfindingComponent::StartMove(const FInputActionValue& _Value)
 					{
 						if(ownerSpellcastingComp)
 						{
-							ownerSpellcastingComp->IncreaseMana();
+							ownerSpellcastingComp->IncreaseMana(ownerSpellcastingComp->GetManaPerTurn());
 							ownerSpellcastingComp->RotateHand();
 						}
 				

@@ -23,8 +23,6 @@ void UHandSpellsWidget::UpdateCardUI(int _CardNum, USpellData* _SpellData)
 		{
 			spellCardWidget->cardName->SetText(FText::FromString(_SpellData->mSpellName));
 			spellCardWidget->cardCost->SetText(FText::FromString(FString::Printf(TEXT("%i"), _SpellData->mBaseManaCost)));
-			//spellCardWidget->cardCost->SetText(FText::FromString(FString::Printf(TEXT("%i"), _SpellData->mSpellId)));	// TEMP, should be ^^
-
 			spellCardWidget->cardDescription->SetText(FText::FromString(_SpellData->mSpellDescription));
 		}
 		else

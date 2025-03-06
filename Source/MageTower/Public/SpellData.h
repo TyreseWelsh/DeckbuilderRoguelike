@@ -22,8 +22,6 @@ public:
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = baseDamageTypes; return;}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int mSpellId;	// temp
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString mSpellName;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int mBaseManaCost;
