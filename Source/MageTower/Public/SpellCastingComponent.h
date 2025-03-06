@@ -34,6 +34,7 @@ protected:
 	virtual void BeginPlay() override;
 	
 public:
+	void Shuffle();
 	void RotateHand();
 	void CycleHand(int _DiscardIndex, int _NewSpellIndex);
 	void DiscardSpell(int _DiscardIndex);

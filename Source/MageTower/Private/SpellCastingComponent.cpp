@@ -5,6 +5,8 @@
 
 #include "SpellCard.h"
 #include "HandSpellsWidget.h"
+#include "SpellData.h"
+#include "Algo/RandomShuffle.h"
 
 // Sets default values for this component's properties
 USpellCastingComponent::USpellCastingComponent()
@@ -33,17 +35,19 @@ void USpellCastingComponent::InitialiseDeck()
 		USpellCard* currentSpellCard = NewObject<USpellCard>(this, mpInitialDeckData[i]);
 		if(currentSpellCard)
 		{
-			currentSpellCard->SetSpellId(i);
 			mpDeckSpells.Add(currentSpellCard);
 		}
 	}
+
+	Algo::RandomShuffle(mpDeckSpells);
 }
 
 void USpellCastingComponent::InitaliseCombatDeck(UHandSpellsWidget* _HandUI)
 {
 	mCurrentMana = mMAX_MANA / 2;
 	mpCombatDeckSpells = mpDeckSpells;
-
+	Algo::RandomShuffle(mpCombatDeckSpells);
+	
 	mpHandUI = _HandUI;
 	if(mpHandUI)
 	{

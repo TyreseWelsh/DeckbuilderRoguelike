@@ -46,7 +46,7 @@ void APlayerPawn::StartCombat()
 {
 	if(mpPlayerHUD)
 	{
-		mpPlayerHUD->EnableHand();
 		mpSpellCastingComp->InitaliseCombatDeck(mpPlayerHUD->handSpellCards);
+		mpPlayerHUD->EnableHand();
 	}
 }

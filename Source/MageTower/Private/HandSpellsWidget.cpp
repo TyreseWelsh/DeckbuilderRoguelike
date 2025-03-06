@@ -22,9 +22,8 @@ void UHandSpellsWidget::UpdateCardUI(int _CardNum, USpellData* _SpellData)
 		if(USpellCardWidget* spellCardWidget = handSpellCards[_CardNum])
 		{
 			spellCardWidget->cardName->SetText(FText::FromString(_SpellData->mSpellName));
-			//spellCardWidget->cardCost->SetText(FText::FromString(FString::Printf(TEXT("%i"), _SpellData->mBaseManaCost)));
-			spellCardWidget->cardCost->SetText(FText::FromString(FString::Printf(TEXT("%i"), _SpellData->mSpellId)));	// TEMP, should be ^^
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::Printf(TEXT("Updated card spell id: %i"), _SpellData->mSpellId));
+			spellCardWidget->cardCost->SetText(FText::FromString(FString::Printf(TEXT("%i"), _SpellData->mBaseManaCost)));
+			//spellCardWidget->cardCost->SetText(FText::FromString(FString::Printf(TEXT("%i"), _SpellData->mSpellId)));	// TEMP, should be ^^
 
 			spellCardWidget->cardDescription->SetText(FText::FromString(_SpellData->mSpellDescription));
 		}
@@ -36,6 +35,5 @@ void UHandSpellsWidget::UpdateCardUI(int _CardNum, USpellData* _SpellData)
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("NO HAND SPELL CARD UI !")));
-
 	}
 }
