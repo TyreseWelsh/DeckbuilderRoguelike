@@ -5,10 +5,10 @@
 
 #include "ManaWidget.h"
 #include "Camera/CameraComponent.h"
-#include "PathfindingComponent.h"
+#include "PlayerPathfindingComponent.h"
 #include "SpellCastingComponent.h"
 #include "PlayerHUDWidget.h"
-#include "ManaWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 APlayerPawn::APlayerPawn()
 {
@@ -22,7 +22,7 @@ APlayerPawn::APlayerPawn()
 	mpCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("MainCamera"));
 	mpCamera->SetupAttachment(mpOrigin);
 
-	mpPathfindingComp = CreateDefaultSubobject<UPathfindingComponent>(TEXT("PathfindingComponent"));
+	mpPlayerPathfindingComp = CreateDefaultSubobject<UPlayerPathfindingComponent>(TEXT("PlayerPathfindingComponent"));
 	mpSpellCastingComp = CreateDefaultSubobject<USpellCastingComponent>(TEXT("SpellcastingComponent"));
 }
 
@@ -34,11 +34,11 @@ void APlayerPawn::BeginPlay()
 	// Only upon combat start will we make the hand cards visible and update mana
 	if(mpSpellCastingComp)
 	{
-		mpSpellCastingComp->InitialiseDeck();
-
 		mpPlayerHUD = CreateWidget<UPlayerHUDWidget>(GetWorld(), playerHUDClass);
 		if(mpPlayerHUD)
 		{
+			mpSpellCastingComp->InitialiseDeck(mpPlayerHUD);
+			
 			mpPlayerHUD->manaBar->InitMana();
 			mpPlayerHUD->AddToViewport();
 		}
@@ -49,7 +49,21 @@ void APlayerPawn::StartCombat()
 {
 	if(mpPlayerHUD)
 	{
-		mpSpellCastingComp->InitaliseCombatDeck(mpPlayerHUD);
+		mpSpellCastingComp->ActivateCombatDeck();
 		mpPlayerHUD->EnableHand();
 	}
+}
+
+void APlayerPawn::EndCombat()
+{
+	if(mpPlayerHUD)
+	{
+		mpSpellCastingComp->DeactivateCombatDeck();
+		mpPlayerHUD->DisableHand();
+	}
+}
+
+void APlayerPawn::StartTurn()
+{
+	EnableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 }

@@ -31,11 +31,10 @@ AActor* UTileMapFunctionLibrary::GetBelowTile(FVector _StartingPos, UWorld* _Cur
 	FHitResult hitResult;
 	FVector traceEnd = FVector(_StartingPos.X, _StartingPos.Y, _StartingPos.Z - 1000);
 	_CurrentWorld->LineTraceSingleByChannel(hitResult, _StartingPos, traceEnd, ECC_Visibility);
-	DrawDebugLine(_CurrentWorld, _StartingPos, traceEnd, FColor::Red, false, 100.f);
+	DrawDebugLine(_CurrentWorld, _StartingPos, traceEnd, FColor::Orange, true);
 	
 	if (IsValid(hitResult.GetActor()))
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT(" Hit: %s"), *hitResult.GetActor()->GetName()));
 		if (hitResult.GetActor()->GetComponentByClass<UTileComponent>())
 		{
 			return hitResult.GetActor();
@@ -56,6 +55,24 @@ bool UTileMapFunctionLibrary::OccupyTile(AActor* _OccupyingActor)
 			if(!IsValid(tileComponent->GetOccupyingObject()))
 			{
 				tileComponent->SetOccupyingObject(_OccupyingActor);
+				tileComponent->mbIsWalkable = false;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+bool UTileMapFunctionLibrary::OccupyTile(AActor* _OccupyingActor, FVector _StartingPos)
+{
+	if (AActor* tile = GetBelowTile(_StartingPos, _OccupyingActor->GetWorld()))
+	{
+		if (UTileComponent* tileComponent = tile->GetComponentByClass<UTileComponent>())
+		{
+			if(!IsValid(tileComponent->GetOccupyingObject()))
+			{
+				tileComponent->SetOccupyingObject(_OccupyingActor);
+				tileComponent->mbIsWalkable = false;
 			}
 			return true;
 		}
@@ -73,6 +90,8 @@ bool UTileMapFunctionLibrary::UnOccupyTile(AActor* _UnOccupyingActor)
 			{
 				tileComponent->SetOccupyingObject(nullptr);
 			}
+			tileComponent->mbIsWalkable = true;
+
 			return true;
 		}
 	}

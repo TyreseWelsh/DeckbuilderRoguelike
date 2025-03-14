@@ -27,3 +27,8 @@ void UPlayerHUDWidget::EnableHand()
 {
 	cardArea->SetRenderOpacity(1.f);
 }
+
+void UPlayerHUDWidget::DisableHand()
+{
+	cardArea->SetRenderOpacity(0.f);
+}

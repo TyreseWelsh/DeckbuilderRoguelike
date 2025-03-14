@@ -4,14 +4,11 @@
 //#include "ActionPlayerController.h"
 #include "MageTower/Public/ActionPlayerController.h"
 
-#include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
-#include "InputActionValue.h"
 #include "PlayerPawn.h"
-#include "AbilitySystemInterface.h"
-#include "MageTower/Public/PathfindingComponent.h"
+#include "PlayerPathfindingComponent.h"
 #include "SpellCastingComponent.h"
 
 // Print to screen ref
@@ -63,7 +60,7 @@ void AActionPlayerController::MovePlayer(const FInputActionValue& _Value)
 	// Move once in cardinal direction on WASD press
 	if(IsValid(mpActionPlayer))
 	{
-		mpActionPlayer->GetComponentByClass<UPathfindingComponent>()->StartMove(_Value);
+		mpActionPlayer->GetComponentByClass<UPlayerPathfindingComponent>()->StartMove(_Value);
 	}
 }
 

@@ -6,8 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "PathfindingComponent.generated.h"
 
-struct FInputActionValue;
-class USpellCastingComponent;
+class UTileComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MAGETOWER_API UPathfindingComponent : public UActorComponent
@@ -18,12 +17,10 @@ public:
 	// Sets default values for this component's properties
 	UPathfindingComponent();
 
-	virtual void StartMove(const FInputActionValue& _Value);
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
 	
 public:	
 	// Called every frame
@@ -31,8 +28,19 @@ public:
 
 	void EnableMovement() { mbCanMove = true; }
 	void DisableMovement() { mbCanMove = false; }
+
+	virtual void FindPath(UTileComponent* _StartTile, UTileComponent* _TargetTile);
+
+protected:
+	// Pathfinding
+	void RetracePath(UTileComponent* _StartTile, UTileComponent* _TargetTile);
+	int GetDistance(UTileComponent* _TileA, UTileComponent* _TileB);
 	
-private:
+	TArray<UTileComponent*> mpOpenSet;
+	TArray<UTileComponent*> mpClosedSet;
+
+	// Movement
+	void MoveOverTime(FVector _NewLocation);
 	UFUNCTION()
 	void Move(FVector _StartLocation, FVector _NewLocation);
 	
@@ -46,6 +54,4 @@ private:
 	bool mbCanMove = true;
 	FTimerHandle mMoveTimer;
 	FTimerDelegate mMoveDelegate;
-
-	TObjectPtr<USpellCastingComponent> ownerSpellcastingComp;
 };

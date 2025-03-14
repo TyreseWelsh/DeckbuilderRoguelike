@@ -28,8 +28,14 @@ void USpellCastingComponent::BeginPlay()
 	// ...
 }
 
-void USpellCastingComponent::InitialiseDeck()
+void USpellCastingComponent::InitialiseDeck(UPlayerHUDWidget* _PlayerHUD)
 {
+	mpPlayerHUD = _PlayerHUD;
+	if(mpPlayerHUD)
+	{
+		mpPlayerHUD->handSpellCards->Init();
+	}
+	
 	// Initialising owner's deck at start of play
 	for(int i = 0; i < mpInitialDeckData.Num(); i++)
 	{
@@ -43,17 +49,15 @@ void USpellCastingComponent::InitialiseDeck()
 	Algo::RandomShuffle(mpDeckSpells);
 }
 
-void USpellCastingComponent::InitaliseCombatDeck(UPlayerHUDWidget* _PlayerHUD)
+void USpellCastingComponent::ActivateCombatDeck()
 {
-	mCurrentMana = 5;
+	mCurrentMana = mMAX_MANA / 2;
 	mpCombatDeckSpells = mpDeckSpells;
 	Algo::RandomShuffle(mpCombatDeckSpells);
 	
-	mpPlayerHUD = _PlayerHUD;
 	if(mpPlayerHUD)
 	{
 		mpPlayerHUD->SetMana(mCurrentMana);
-		mpPlayerHUD->handSpellCards->Init();
 		
 		mpHandSpells.SetNum(mMAX_HAND_SIZE);
 		for(int i = 0; i < mpHandSpells.Num(); i++)
@@ -64,19 +68,39 @@ void USpellCastingComponent::InitaliseCombatDeck(UPlayerHUDWidget* _PlayerHUD)
 	}
 }
 
+void USpellCastingComponent::DeactivateCombatDeck()
+{
+	mCurrentMana = 0;
+	mpCombatDeckSpells.Empty();
+	mpHandSpells.Empty();
+	mpDiscardSpells.Empty();
+
+	if(mpPlayerHUD)
+	{
+		mpPlayerHUD->SetMana(mCurrentMana);
+	}
+
+	mCurrentSpellIndex = -1;
+	mCurrentCastingState = ECastingState::None;
+	mCastDirection = FVector::ZeroVector;
+}
+
 void USpellCastingComponent::RotateHand()
 {
-	mCurrentSpellIndex = -1;
-	
-	DiscardSpell(0);
-	
-	for(int i = 0; i < mMAX_HAND_SIZE - 1; i++)
+	if(mpHandSpells.Num() > 0)
 	{
-		mpHandSpells[i] = mpHandSpells[i + 1];
-		UpdateHandCardUI(mpPlayerHUD, i);
-	}
+		mCurrentSpellIndex = -1;
 	
-	DrawTopDeck(mMAX_HAND_SIZE - 1);
+		DiscardSpell(0);
+	
+		for(int i = 0; i < mMAX_HAND_SIZE - 1; i++)
+		{
+			mpHandSpells[i] = mpHandSpells[i + 1];
+			UpdateHandCardUI(mpPlayerHUD, i);
+		}
+	
+		DrawTopDeck(mMAX_HAND_SIZE - 1);
+	}
 }
 
 void USpellCastingComponent::CycleHand(int _DiscardIndex, int _NewSpellIndex)
@@ -89,8 +113,11 @@ void USpellCastingComponent::DiscardSpell(int _DiscardIndex)
 {
 	if(USpellCard* discardedSpell = mpHandSpells[_DiscardIndex])
 	{
-		mpDiscardSpells.Add(discardedSpell);
-		mpHandSpells[_DiscardIndex] = nullptr;
+		if(mpHandSpells.Num() > 0)
+		{
+			mpDiscardSpells.Add(discardedSpell);
+			mpHandSpells[_DiscardIndex] = nullptr;
+		}
 	}
 }
 
@@ -133,77 +160,91 @@ void USpellCastingComponent::RecycleDiscardPile()
 
 void USpellCastingComponent::SelectSpell(int _HandIndex)
 {
-	if(_HandIndex >= 0 && _HandIndex < mMAX_HAND_SIZE)
+	if(_HandIndex >= 0 && _HandIndex < mMAX_HAND_SIZE
+		&& mpHandSpells.Num() > 0)
 	{
 		if(mCurrentMana - mpHandSpells[_HandIndex]->GetSpellData()->mBaseManaCost >= 0)
 		{
-			GEngine->AddOnScreenDebugMessage(1, 1.5f, FColor::Green, FString::Printf(TEXT("Picked spell %i!"), _HandIndex + 1));
+			GEngine->AddOnScreenDebugMessage(1, 1.5f, FColor::Green, FString::Printf(TEXT("Picked spell %i!"), _HandIndex));
 			mCurrentCastingState = ECastingState::Aiming;
 			mCurrentSpellIndex = _HandIndex;
 
-			SetCastDirection(FVector2D(1, 0));
+			SetCastDirection(FVector2D(0, 1));
 		}
 	}
 }
 
 void USpellCastingComponent::CastSpell()
 {
-	if(mCurrentSpellIndex >= 0 && mCurrentSpellIndex < mMAX_HAND_SIZE && mpHandSpells[mCurrentSpellIndex]->GetSpellData()->mBaseManaCost <= mCurrentMana)
+	// NOTE: Have another look to see if we can reduce the number of IF statements
+	if(mpHandSpells.Num() > 0)
 	{
-		if(mpHandSpells[mCurrentSpellIndex])
+		if(mCurrentSpellIndex >= 0 && mCurrentSpellIndex < mMAX_HAND_SIZE && mpHandSpells[mCurrentSpellIndex])
 		{
-			DecreaseMana(mpHandSpells[mCurrentSpellIndex]->GetSpellData()->mBaseManaCost);
-			CycleHand(mCurrentSpellIndex, mCurrentSpellIndex);
-			CancelSpellCast();
+			if(mpHandSpells[mCurrentSpellIndex]->GetSpellData()->mBaseManaCost <= mCurrentMana)
+			{
+				DecreaseMana(mpHandSpells[mCurrentSpellIndex]->GetSpellData()->mBaseManaCost);
+				CycleHand(mCurrentSpellIndex, mCurrentSpellIndex);
+				CancelSpellCast();
+			}
 		}
 	}
 }
 
 void USpellCastingComponent::IncreaseMana(int _IncreaseAmount)
 {
-	SetCurrentMana(mCurrentMana + _IncreaseAmount);
+	if(mpHandSpells.Num() > 0)
+	{
+		SetCurrentMana(mCurrentMana + _IncreaseAmount);
+	}
 }
 
 void USpellCastingComponent::DecreaseMana(int _DecreaseAmount)
 {
-	SetCurrentMana(mCurrentMana - _DecreaseAmount);
+	if(mpHandSpells.Num() > 0)
+	{
+		SetCurrentMana(mCurrentMana - _DecreaseAmount);
+	}
 }
 
 void USpellCastingComponent::SetCastDirection(FVector2D _CastDirection)
 {
-	if(_CastDirection == FVector2D::ZeroVector or _CastDirection == FVector2D::One()/* or (mCurrentSpellIndex < 0 && mCurrentSpellIndex > mMAX_HAND_SIZE)*/)
+	if(_CastDirection == FVector2D::ZeroVector or _CastDirection == FVector2D::One())
 	{
 		return;
 	}
-	
-	mCastDirection = FVector(_CastDirection.Y, _CastDirection.X, 0);
-	int tileSize = 100;
-	if(IsValid(mpHandSpells[mCurrentSpellIndex]))
-	{
-		int spellRange = mpHandSpells[mCurrentSpellIndex]->GetSpellData()->mBaseRange;
-		int spellWidth = mpHandSpells[mCurrentSpellIndex]->GetSpellData()->mBaseWidth;
-	
-		FVector startPos = GetOwner()->GetActorLocation();
-		for(int cRange = 1; cRange <= spellRange; cRange++)
-		{
-			for (int cWidth = -spellWidth; cWidth <= spellWidth; cWidth++)
-			{
-				FVector affectedTilePos;
-				if(mCastDirection.X != 0 && mCastDirection.Y == 0) 
-				{
-					affectedTilePos.X = startPos.X + mCastDirection.X * (cRange * tileSize);
-					affectedTilePos.Y = startPos.Y + cWidth * tileSize;
-				}
-				else if(mCastDirection.X == 0 && mCastDirection.Y != 0)
-				{
-					affectedTilePos.X = startPos.X + cWidth * tileSize;
-					affectedTilePos.Y = startPos.Y + mCastDirection.Y * (cRange * tileSize);
-				}
 
-				GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("x: %f , y: %f"), affectedTilePos.X, affectedTilePos.Y));
-				DrawDebugLine(GetWorld(), affectedTilePos, FVector(affectedTilePos.X, affectedTilePos.Y, affectedTilePos.Z + 1000), FColor::Red, false, 1.f, 0, 2.f);
-			}
-		}	
+	if(mpHandSpells.Num() > 0)
+	{
+		mCastDirection = FVector(_CastDirection.Y, _CastDirection.X, 0);
+		int tileSize = 100;
+		if(IsValid(mpHandSpells[mCurrentSpellIndex]))
+		{
+			int spellRange = mpHandSpells[mCurrentSpellIndex]->GetSpellData()->mBaseRange;
+			int spellWidth = mpHandSpells[mCurrentSpellIndex]->GetSpellData()->mBaseWidth;
+	
+			FVector startPos = GetOwner()->GetActorLocation();
+			for(int cRange = 1; cRange <= spellRange; cRange++)
+			{
+				for (int cWidth = -spellWidth; cWidth <= spellWidth; cWidth++)
+				{
+					FVector affectedTilePos;
+					if(mCastDirection.X != 0 && mCastDirection.Y == 0) 
+					{
+						affectedTilePos.X = startPos.X + mCastDirection.X * (cRange * tileSize);
+						affectedTilePos.Y = startPos.Y + cWidth * tileSize;
+					}
+					else if(mCastDirection.X == 0 && mCastDirection.Y != 0)
+					{
+						affectedTilePos.X = startPos.X + cWidth * tileSize;
+						affectedTilePos.Y = startPos.Y + mCastDirection.Y * (cRange * tileSize);
+					}
+
+					GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("x: %f , y: %f"), affectedTilePos.X, affectedTilePos.Y));
+					DrawDebugLine(GetWorld(), affectedTilePos, FVector(affectedTilePos.X, affectedTilePos.Y, affectedTilePos.Z + 1000), FColor::Red, false, 1.f, 0, 2.f);
+				}
+			}	
+		}
 	}
 }
 

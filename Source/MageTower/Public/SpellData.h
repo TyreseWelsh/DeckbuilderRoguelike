@@ -19,7 +19,7 @@ class MAGETOWER_API USpellData : public UDataAsset, public IGameplayTagAssetInte
 	GENERATED_BODY()
 
 public:
-	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = baseDamageTypes; return;}
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = baseDamageTypes; }
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString mSpellName;

@@ -27,8 +27,9 @@ public:
 	// Sets default values for this component's properties
 	USpellCastingComponent();
 
-	void InitialiseDeck();
-	void InitaliseCombatDeck(UPlayerHUDWidget* _HandUI);					// Functionality will most likely be moved somwhere else at some point
+	void InitialiseDeck(UPlayerHUDWidget* _PlayerHUD);
+	void ActivateCombatDeck();					// Functionality will most likely be moved somwhere else at some point
+	void DeactivateCombatDeck();
 
 protected:
 	// Called when the game starts
@@ -85,6 +86,7 @@ protected:
 	int mDeckSize = 20;
 
 	ECastingState mCurrentCastingState = ECastingState::None;
+	// x=horizontal, y="vertical", z=N/A
 	FVector mCastDirection;
 
 	TObjectPtr<UPlayerHUDWidget> mpPlayerHUD;

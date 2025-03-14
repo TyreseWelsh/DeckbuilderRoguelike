@@ -7,13 +7,16 @@
 #include "AbilitySystemInterface.h"
 #include "ActionPawn.generated.h"
 
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
+
+
 class UAbilitySystemComponent;
 
 UCLASS()
 class MAGETOWER_API AActionPawn : public APawn
 {
 	GENERATED_BODY()
-	
+
 public:
 	// Sets default values for this pawn's properties
 	AActionPawn();
@@ -25,4 +28,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+protected:
+	
 };

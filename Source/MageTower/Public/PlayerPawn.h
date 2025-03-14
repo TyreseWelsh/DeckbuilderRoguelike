@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "ActionPawn.h"
+#include "IsPlayer.h"
 #include "PlayerPawn.generated.h"
 
+
 class UCameraComponent;
-class UPathfindingComponent;
+class UPlayerPathfindingComponent;
 class USpellCastingComponent;
 class UPlayerHUDWidget;
 
@@ -15,7 +17,7 @@ class UPlayerHUDWidget;
  * 
  */
 UCLASS()
-class MAGETOWER_API APlayerPawn : public AActionPawn
+class MAGETOWER_API APlayerPawn : public AActionPawn, public IIsPlayer
 {
 	GENERATED_BODY()
 
@@ -27,7 +29,7 @@ class MAGETOWER_API APlayerPawn : public AActionPawn
 	TObjectPtr<UCameraComponent> mpCamera;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UPathfindingComponent> mpPathfindingComp;
+	TObjectPtr<UPlayerPathfindingComponent> mpPlayerPathfindingComp;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<USpellCastingComponent> mpSpellCastingComp;
 
@@ -36,6 +38,11 @@ public:
 
 	// Temp
 	void StartCombat();
+	void EndCombat();
+
+	// "IsPlayer" interface functions
+	virtual void StartTurn() override;
+	virtual FOnPlayerTurnEnd* GetTurnEndDelegate() override { return &mOnTurnEndDelegate; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -43,4 +50,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> playerHUDClass;
 	TObjectPtr<UPlayerHUDWidget> mpPlayerHUD;
+
+	//FOnPlayerTurnStart mOnTurnStartDelegate;
+	FOnPlayerTurnEnd mOnTurnEndDelegate;
 };

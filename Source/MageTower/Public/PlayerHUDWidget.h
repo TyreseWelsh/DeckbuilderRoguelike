@@ -25,6 +25,7 @@ public:
 	void SetMana(int _CurrentMana);
 	void UpdateHandUI(int _CardNum, USpellData* _SpellData);
 	void EnableHand();
+	void DisableHand();
 	
 	UPROPERTY(meta = (BindWidget, AllowPrivateAccess))
 	TObjectPtr<UProgressBar> healthBar;

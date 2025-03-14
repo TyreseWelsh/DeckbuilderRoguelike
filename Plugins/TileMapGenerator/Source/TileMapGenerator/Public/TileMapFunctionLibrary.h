@@ -16,10 +16,11 @@ class TILEMAPGENERATOR_API UTileMapFunctionLibrary : public UBlueprintFunctionLi
 
 public:
 	UFUNCTION(BlueprintCallable)
-	static AActor* GetBelowTile(AActor* StartingActor);
-	static AActor* GetBelowTile(FVector StartingPos, UWorld* CurrentWorld);
+	static AActor* GetBelowTile(AActor* _StartingActor);
+	static AActor* GetBelowTile(FVector _StartingPos, UWorld* _CurrentWorld);
 	UFUNCTION(BlueprintCallable)
-	static bool OccupyTile(AActor* OccupyingActor);
+	static bool OccupyTile(AActor* _OccupyingActor);
+	static bool OccupyTile(AActor* _OccupyingActor, FVector _StartingPos);
 	UFUNCTION(BlueprintCallable)
-	static bool UnOccupyTile(AActor* UnOccupyingActor);
+	static bool UnOccupyTile(AActor* _UnOccupyingActor);
 };

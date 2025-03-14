@@ -43,6 +43,6 @@ public:
 
 private:
 	void FindNeighbourTiles();
-
+	
 	AActor* mpOccupyingObject;
 };

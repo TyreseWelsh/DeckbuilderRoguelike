@@ -30,7 +30,7 @@ public:
 	void SetWidth(int _NewWidth) { mManaCost = _NewWidth; }
 	int GetWidth() const { return mWidth; }*/
 	USpellData* GetSpellData() { return mpBaseSpellData; }
-	
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess=true))
 	TObjectPtr<USpellData> mpBaseSpellData;

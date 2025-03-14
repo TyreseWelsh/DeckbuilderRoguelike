@@ -2,6 +2,7 @@
 
 
 #include "TileComponent.h"
+#include "TileMapFunctionLibrary.h"
 
 // Sets default values for this component's properties
 UTileComponent::UTileComponent()
@@ -34,5 +35,29 @@ void UTileComponent::TickComponent(float _DeltaTime, ELevelTick _TickType, FActo
 
 void UTileComponent::Init(int _TileSize)
 {
+	FindNeighbourTiles();
+}
+
+void UTileComponent::FindNeighbourTiles()
+{
+	int tileSize = 100;
+	for(int x = -1; x <= 1; x++)
+    {
+    	for(int y = -1; y <= 1; y++)
+    	{
+    		if(abs(x) != abs(y))
+    		{
+    			FVector neighbourTileLocation = FVector(GetOwner()->GetActorLocation().X + x * tileSize, GetOwner()->GetActorLocation().Y + y * tileSize, GetOwner()->GetActorLocation().Z);
+
+    			if(AActor* neighbourTile = UTileMapFunctionLibrary::GetBelowTile(neighbourTileLocation, GetWorld()))
+    			{
+    				if(UTileComponent* neighbourTileComponent = neighbourTile->GetComponentByClass<UTileComponent>())
+    				{
+    					mpNeighbourTiles.Add(neighbourTileComponent);
+    				}
+    			}
+    		}
+    	}
+    }
 }
 

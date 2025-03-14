@@ -25,7 +25,7 @@ void UMapGeneratorComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	Init();
+	// Init();
 }
 
 

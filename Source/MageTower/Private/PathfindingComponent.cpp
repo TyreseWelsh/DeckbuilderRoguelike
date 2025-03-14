@@ -2,10 +2,10 @@
 
 
 #include "MageTower/Public/PathfindingComponent.h"
-#include "InputActionValue.h"
-#include "TileComponent.h"
+
 #include "TileMapFunctionLibrary.h"
-#include "SpellCastingComponent.h"
+#include "TileComponent.h"
+
 
 // Sets default values for this component's properties
 UPathfindingComponent::UPathfindingComponent()
@@ -24,52 +24,92 @@ void UPathfindingComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	ownerSpellcastingComp = GetOwner()->GetComponentByClass<USpellCastingComponent>();
 }
 
-void UPathfindingComponent::StartMove(const FInputActionValue& _Value)
+void UPathfindingComponent::FindPath(UTileComponent* _StartTile, UTileComponent* _TargetTile)
 {
-	FVector2D moveDirection = _Value.Get<FVector2D>();
-	FVector newLocation;
+	mpOpenSet.Empty();
+	mpClosedSet.Empty();
+	
+	_StartTile->mGCost = 0;
+	mpOpenSet.Add(_StartTile);
 
-	if(ownerSpellcastingComp)
+	while(mpOpenSet.Num() > 0)
 	{
-		switch(ownerSpellcastingComp->GetCastState())
+		// Find path
+		UTileComponent* currentTile = mpOpenSet[0];
+		for(int i = 1; i < mpOpenSet.Num(); i++)
 		{
-			case(ECastingState::None):
-				newLocation = FVector(GetOwner()->GetActorLocation().X + moveDirection.Y * mMoveDistance,GetOwner()->GetActorLocation().Y + moveDirection.X * mMoveDistance, GetOwner()->GetActorLocation().Z);
-				if(AActor* tile = UTileMapFunctionLibrary::GetBelowTile(newLocation, GetWorld()))
+			if(mpOpenSet[i]->mFCost < currentTile->mFCost or
+				(mpOpenSet[i]->mFCost == currentTile->mFCost && mpOpenSet[i]->mHCost < currentTile->mHCost))
+			{
+				currentTile = mpOpenSet[i];
+			}
+		}
+		mpOpenSet.Remove(currentTile);
+		mpClosedSet.Add(currentTile);
+
+		if(currentTile == _TargetTile)
+		{
+			// End pathfinding and calculate path
+			RetracePath(_StartTile, _TargetTile);
+			return;
+		}
+
+		// Add valid neighbour tiles to open set
+		for(UTileComponent* NeighbourTileComponent : currentTile->mpNeighbourTiles)
+		{
+			if(!NeighbourTileComponent->mbIsWalkable or mpClosedSet.Contains(NeighbourTileComponent))
+			{
+				continue;
+			}
+	
+			int NewNeighbourGCost = abs(currentTile->mGCost + GetDistance(currentTile, NeighbourTileComponent));
+			if(NewNeighbourGCost < NeighbourTileComponent->mGCost or !mpOpenSet.Contains(NeighbourTileComponent))
+			{
+				NeighbourTileComponent->mGCost = NewNeighbourGCost;
+				NeighbourTileComponent->mHCost = abs(GetDistance(NeighbourTileComponent, _TargetTile));
+				
+				NeighbourTileComponent->mFCost = NeighbourTileComponent->mGCost + NeighbourTileComponent->mHCost;
+				NeighbourTileComponent->mpParentTile = currentTile;
+
+				if(!mpOpenSet.Contains(NeighbourTileComponent))
 				{
-					if(tile->GetComponentByClass<UTileComponent>()->mbIsWalkable && mbCanMove)
-					{
-						if(ownerSpellcastingComp)
-						{
-							ownerSpellcastingComp->IncreaseMana(ownerSpellcastingComp->GetManaPerTurn());
-							ownerSpellcastingComp->RotateHand();
-						}
-				
-						DisableMovement();			
-						UTileMapFunctionLibrary::UnOccupyTile(GetOwner());
-				
-						// Start timer until player can move again
-						mMoveDelegate.BindUFunction(this, "Move", GetOwner()->GetActorLocation(), newLocation);
-						GetWorld()->GetTimerManager().SetTimer(mMoveTimer, mMoveDelegate, mMoveRate, true);
-				
-						UTileMapFunctionLibrary::OccupyTile(GetOwner());
-					}
+					mpOpenSet.Add(NeighbourTileComponent);
 				}
-				break;
-			case(ECastingState::Aiming):
-				ownerSpellcastingComp->SetCastDirection(moveDirection);
-				break;
-			case(ECastingState::Casting):
-				break;
-			default:
-				break;
+			}
 		}
 	}
 }
 
+void UPathfindingComponent::RetracePath(UTileComponent* _StartTile, UTileComponent* _TargetTile)
+{
+	UTileComponent* currentTile = _TargetTile;
+
+	while(currentTile->mpParentTile != _StartTile)
+	{
+		currentTile = currentTile->mpParentTile;
+	}
+
+	if(currentTile->mbIsWalkable)
+	{
+		MoveOverTime(currentTile->GetOwner()->GetActorLocation());
+	}
+}
+
+int UPathfindingComponent::GetDistance(UTileComponent* _TileA, UTileComponent* _TileB)
+{
+	int tileSize = 100;
+	int DistanceX = abs(_TileA->GetOwner()->GetActorLocation().X - _TileB->GetOwner()->GetActorLocation().X);
+	int DistanceY = abs(_TileA->GetOwner()->GetActorLocation().Y - _TileB->GetOwner()->GetActorLocation().Y);
+
+	if(DistanceX > DistanceY)
+	{
+		return (14.f * tileSize) * DistanceY + (10.f * tileSize) * (DistanceX - DistanceY);
+	}
+
+	return (14.f * tileSize) * DistanceX + (10.f * tileSize) * (DistanceY - DistanceX);
+}
 
 // Called every frame
 void UPathfindingComponent::TickComponent(float _DeltaTime, ELevelTick _TickType, FActorComponentTickFunction* _ThisTickFunction)
@@ -77,6 +117,17 @@ void UPathfindingComponent::TickComponent(float _DeltaTime, ELevelTick _TickType
 	Super::TickComponent(_DeltaTime, _TickType, _ThisTickFunction);
 
 	// ...
+}
+
+void UPathfindingComponent::MoveOverTime(FVector _NewLocation)
+{
+	DisableMovement();			
+	UTileMapFunctionLibrary::UnOccupyTile(GetOwner());
+	UTileMapFunctionLibrary::OccupyTile(GetOwner(), _NewLocation);
+
+	// Start timer until player can move again
+	mMoveDelegate.BindUFunction(this, "Move", GetOwner()->GetActorLocation(), _NewLocation);
+	GetWorld()->GetTimerManager().SetTimer(mMoveTimer, mMoveDelegate, mMoveRate, true);
 }
 
 void UPathfindingComponent::Move(FVector _StartLocation, FVector _NewLocation)
@@ -93,6 +144,7 @@ void UPathfindingComponent::Move(FVector _StartLocation, FVector _NewLocation)
 		return;
 	}
 
+	EnableMovement();
 	GetOwner()->SetActorLocation(currentLocation);
 }
 
