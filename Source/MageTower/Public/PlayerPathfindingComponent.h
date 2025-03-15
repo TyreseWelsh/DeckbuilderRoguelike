@@ -20,6 +20,7 @@ class MAGETOWER_API UPlayerPathfindingComponent : public UPathfindingComponent
 public:
 	virtual void BeginPlay() override;
 	void StartMove(const FInputActionValue& _Value);
+	virtual void EndMove() override;
 	
 protected:
 	TObjectPtr<USpellCastingComponent> ownerSpellcastingComp;

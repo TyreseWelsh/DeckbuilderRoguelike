@@ -6,7 +6,7 @@
 #include "FieldGenerator.h"
 #include "FieldManager.h"
 #include "Kismet/GameplayStatics.h"
-#include "IsPlayer.h"
+#include "IsActionObject.h"
 
 AMageTowerGameMode::AMageTowerGameMode()
 {
@@ -31,16 +31,10 @@ void AMageTowerGameMode::BeginPlay()
 		if(mpPlayerPawn)
 		{
 			mpFieldManager->Init(mpFieldGenerator->GenerateField());
-
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Default pawn: %s"), *mpPlayerPawn->GetName()));
-
-			if(IIsPlayer* playerInterface = Cast<IIsPlayer>(mpPlayerPawn))
+			
+			if(IIsActionObject* playerInterface = Cast<IIsActionObject>(mpPlayerPawn))
 			{
 				playerInterface->GetTurnEndDelegate()->AddUObject(mpFieldManager, &UFieldManager::NewTurn);
-				if(playerInterface->GetTurnEndDelegate()->IsBound())
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Field manager NewTurn bound to player end turn")));
-				}
 			}
 		}
 	}

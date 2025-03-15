@@ -3,6 +3,7 @@
 
 #include "MageTower/Public/PathfindingComponent.h"
 
+#include "IsActionObject.h"
 #include "TileMapFunctionLibrary.h"
 #include "TileComponent.h"
 
@@ -16,7 +17,6 @@ UPathfindingComponent::UPathfindingComponent()
 	
 	// ...
 }
-
 
 // Called when the game starts
 void UPathfindingComponent::BeginPlay()
@@ -48,14 +48,15 @@ void UPathfindingComponent::FindPath(UTileComponent* _StartTile, UTileComponent*
 		}
 		mpOpenSet.Remove(currentTile);
 		mpClosedSet.Add(currentTile);
-
-		if(currentTile == _TargetTile)
+		
+		float distToTarget = FVector::Distance(currentTile->GetOwner()->GetActorLocation(), _TargetTile->GetOwner()->GetActorLocation());
+		if(distToTarget == 100)
 		{
 			// End pathfinding and calculate path
-			RetracePath(_StartTile, _TargetTile);
+			RetracePath(_StartTile, currentTile);
 			return;
 		}
-
+		
 		// Add valid neighbour tiles to open set
 		for(UTileComponent* NeighbourTileComponent : currentTile->mpNeighbourTiles)
 		{
@@ -82,17 +83,35 @@ void UPathfindingComponent::FindPath(UTileComponent* _StartTile, UTileComponent*
 	}
 }
 
+void UPathfindingComponent::EndMove()
+{
+}
+
+void UPathfindingComponent::ClearMoveTimer()
+{
+	GetWorld()->GetTimerManager().ClearTimer(mMoveTimer);
+}
+
 void UPathfindingComponent::RetracePath(UTileComponent* _StartTile, UTileComponent* _TargetTile)
 {
 	UTileComponent* currentTile = _TargetTile;
-
-	while(currentTile->mpParentTile != _StartTile)
+	if(currentTile != _StartTile)
 	{
-		currentTile = currentTile->mpParentTile;
+		while(currentTile->mpParentTile != _StartTile)
+		{
+			if(!currentTile->mpParentTile)
+			{
+				break;
+			}
+			currentTile = currentTile->mpParentTile;
+		}
 	}
-
+	
 	if(currentTile->mbIsWalkable)
 	{
+		DisableMovement();			
+		UTileMapFunctionLibrary::UnOccupyTile(GetOwner());
+		
 		MoveOverTime(currentTile->GetOwner()->GetActorLocation());
 	}
 }
@@ -121,10 +140,6 @@ void UPathfindingComponent::TickComponent(float _DeltaTime, ELevelTick _TickType
 
 void UPathfindingComponent::MoveOverTime(FVector _NewLocation)
 {
-	DisableMovement();			
-	UTileMapFunctionLibrary::UnOccupyTile(GetOwner());
-	UTileMapFunctionLibrary::OccupyTile(GetOwner(), _NewLocation);
-
 	// Start timer until player can move again
 	mMoveDelegate.BindUFunction(this, "Move", GetOwner()->GetActorLocation(), _NewLocation);
 	GetWorld()->GetTimerManager().SetTimer(mMoveTimer, mMoveDelegate, mMoveRate, true);
@@ -136,15 +151,20 @@ void UPathfindingComponent::Move(FVector _StartLocation, FVector _NewLocation)
 	FVector currentLocation = FMath::Lerp(_StartLocation, _NewLocation, mMoveAlpha);
 	if(mMoveAlpha >= 1)
 	{
-		// Reached destination, so clear timer
+		// Reached move destination
 		GetOwner()->SetActorLocation(_NewLocation);
 		mMoveAlpha = 0;
-		mbCanMove = true;
-		GetWorld()->GetTimerManager().ClearTimer(mMoveTimer);
+		UTileMapFunctionLibrary::OccupyTile(GetOwner());
+		EnableMovement();
+		
+		if(IIsActionObject* actionActorInterface = Cast<IIsActionObject>(GetOwner()))
+		{
+			actionActorInterface->GetTurnEndDelegate()->Broadcast();
+		}
+		ClearMoveTimer();
 		return;
 	}
-
-	EnableMovement();
+	
 	GetOwner()->SetActorLocation(currentLocation);
 }
 

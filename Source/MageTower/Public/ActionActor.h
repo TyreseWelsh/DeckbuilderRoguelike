@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IsActionObject.h"
 #include "GameFramework/Actor.h"
 #include "ActionActor.generated.h"
 
 UCLASS()
-class MAGETOWER_API AActionActor : public AActor
+class MAGETOWER_API AActionActor : public AActor, public IIsActionObject
 {
 	GENERATED_BODY()
 	
@@ -23,7 +24,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void StartTurn();
+	virtual void StartTurn() override;
+	virtual FOnTurnEnd* GetTurnEndDelegate() override { return &mOnTurnEndDelegate; }
 
 	void SetPlayer(AActor* _NewPlayer) { mpPlayer = _NewPlayer; }
 	
@@ -34,4 +36,6 @@ protected:
 	TObjectPtr<UStaticMeshComponent> mpMesh;
 
 	AActor* mpPlayer;
+
+	FOnTurnEnd mOnTurnEndDelegate;
 };

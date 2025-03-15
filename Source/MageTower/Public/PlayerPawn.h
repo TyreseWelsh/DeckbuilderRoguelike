@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ActionPawn.h"
-#include "IsPlayer.h"
+#include "IsActionObject.h"
 #include "PlayerPawn.generated.h"
 
 
@@ -17,7 +17,7 @@ class UPlayerHUDWidget;
  * 
  */
 UCLASS()
-class MAGETOWER_API APlayerPawn : public AActionPawn, public IIsPlayer
+class MAGETOWER_API APlayerPawn : public AActionPawn, public IIsActionObject
 {
 	GENERATED_BODY()
 
@@ -40,9 +40,9 @@ public:
 	void StartCombat();
 	void EndCombat();
 
-	// "IsPlayer" interface functions
+	// "IsActionObject" interface functions
 	virtual void StartTurn() override;
-	virtual FOnPlayerTurnEnd* GetTurnEndDelegate() override { return &mOnTurnEndDelegate; }
+	virtual FOnTurnEnd* GetTurnEndDelegate() override { return &mOnTurnEndDelegate; }
 	
 protected:
 	virtual void BeginPlay() override;
@@ -51,6 +51,6 @@ protected:
 	TSubclassOf<UUserWidget> playerHUDClass;
 	TObjectPtr<UPlayerHUDWidget> mpPlayerHUD;
 
-	//FOnPlayerTurnStart mOnTurnStartDelegate;
-	FOnPlayerTurnEnd mOnTurnEndDelegate;
+	//FOnTurnStart mOnTurnStartDelegate;
+	FOnTurnEnd mOnTurnEndDelegate;
 };

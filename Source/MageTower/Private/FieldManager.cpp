@@ -7,7 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ActionActor.h"
 #include "ActionEnemy.h"
-#include "IsPlayer.h"
+#include "IsActionObject.h"
 #include "IsFieldManager.h"
 #include "TileComponent.h"
 #include "GameFramework/GameModeBase.h"
@@ -18,22 +18,25 @@ void UFieldManager::Init(TArray<AActor*> _AvailableTiles)
 	SetPlayerStart();
 
 	SpawnEnemies();
+
+	// Initial turn (player)
+	NewTurn();
 }
 
-void UFieldManager::NewTurn(APawn* _Player)
+void UFieldManager::NewTurn()
 {
-
-	for(AActionActor* fieldActor : mpFieldActors)
+	if(fieldActorTurnIndex >= mpFieldActors.Num())
 	{
-		// Move enemies, tick dot's, do environment stuff, etc
-		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Orange, FString::Printf(TEXT("FieldManager: Loop through fieldActors...")));
-		fieldActor->StartTurn();
+		fieldActorTurnIndex = 0;
 	}
 
-	// After field actors have finished, player can take actions
-	if(IIsPlayer* playerInterface = Cast<IIsPlayer>(_Player))
+	if(IsValid(mpFieldActors[fieldActorTurnIndex]))
 	{
-		playerInterface->StartTurn();
+		if(IIsActionObject* actionObjInterface = Cast<IIsActionObject>(mpFieldActors[fieldActorTurnIndex]))
+		{
+			actionObjInterface->StartTurn();
+			fieldActorTurnIndex++;
+		}
 	}
 }
 
@@ -42,9 +45,11 @@ void UFieldManager::SetPlayerStart()
 	int startTileIndex = mpAvailableTiles.Num() / 2;
 	if(AActor* startTile = mpAvailableTiles[startTileIndex])
 	{
-		APawn* playerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-		playerPawn->SetActorLocation(startTile->GetActorLocation());
-		UTileMapFunctionLibrary::OccupyTile(playerPawn);
+		mpPlayer = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+		mpPlayer->SetActorLocation(startTile->GetActorLocation());
+		UTileMapFunctionLibrary::OccupyTile(mpPlayer);
+		mpFieldActors.Add(mpPlayer);
+		mpPlayer->DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	}
 }
 
@@ -88,22 +93,6 @@ void UFieldManager::FindEnemySpawnClass(int _PointsLeft)
 	}
 }
 
-void UFieldManager::SpawnEnemy(TSubclassOf<AActionActor> enemyClass)
-{
-	if(AActor* spawnTile = FindEnemySpawnTile())
-	{
-		float enemyRotationYaw = FMath::RandRange(0, 4) * 90;
-		FRotator enemyRotation = FRotator(0, enemyRotationYaw, 0);
-		AActionEnemy* currentEnemy = GetWorld()->SpawnActor<AActionEnemy>(enemyClass, spawnTile->GetActorLocation(), enemyRotation);
-		if(IIsFieldManager* fieldManagerInterface = Cast<IIsFieldManager>(GetWorld()->GetAuthGameMode()))
-		{
-			currentEnemy->SetPlayer(fieldManagerInterface->GetPlayer());
-		}
-		UTileMapFunctionLibrary::OccupyTile(currentEnemy);
-		mpFieldActors.Add(currentEnemy);
-	}
-}
-
 AActor* UFieldManager::FindEnemySpawnTile()
 {
 	int randTileIndex = FMath::RandRange(0, mpAvailableTiles.Num() - 1);
@@ -115,4 +104,29 @@ AActor* UFieldManager::FindEnemySpawnTile()
 	}
 
 	return currentTile;
+}
+
+void UFieldManager::SpawnEnemy(TSubclassOf<AActionActor> enemyClass)
+{
+	if(AActor* spawnTile = FindEnemySpawnTile())
+	{
+		float enemyRotationYaw = FMath::RandRange(0, 4) * 90;
+		FRotator enemyRotation = FRotator(0, enemyRotationYaw, 0);
+		AActionEnemy* currentEnemy = GetWorld()->SpawnActor<AActionEnemy>(enemyClass, spawnTile->GetActorLocation(), enemyRotation);
+		if(IIsFieldManager* fieldManagerInterface = Cast<IIsFieldManager>(GetWorld()->GetAuthGameMode()))
+		{
+			currentEnemy->SetPlayer(fieldManagerInterface->GetPlayer());
+		}
+		if(IIsActionObject* actionInterface = Cast<IIsActionObject>(currentEnemy))
+		{
+			actionInterface->GetTurnEndDelegate()->AddUObject(this, &UFieldManager::NewTurn);
+		}
+		UTileMapFunctionLibrary::OccupyTile(currentEnemy);
+		mpFieldActors.Add(currentEnemy);
+	}
+}
+
+void UFieldManager::FieldActorDeath(AActionActor* _DeadActor)
+{
+	mpFieldActors.Remove(_DeadActor);
 }

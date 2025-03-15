@@ -29,22 +29,30 @@ public:
 	UFUNCTION()
 	void Init(TArray<AActor*> _AvailableTiles);
 	UFUNCTION()
-	void NewTurn(APawn* _Player);
+	void NewTurn();
 
 	void SetPlayerStart();
 protected:
-	void SpawnEnemies();
-	void FindEnemySpawnClass(int _PointsLeft);
-	void SpawnEnemy(TSubclassOf<AActionActor> enemyClass);
-	AActor* FindEnemySpawnTile();
-	
+	void FieldActorDeath(AActionActor* _DeadActor);
+
+	UPROPERTY()
+	APawn* mpPlayer;
 	UPROPERTY()
 	TArray<AActor*> mpAvailableTiles;
+	
+	// Field actor handling
 	UPROPERTY()
-	TArray<AActionActor*> mpFieldActors;
+	TArray<AActor*> mpFieldActors;
+	int fieldActorTurnIndex = 0;
 
+	// Enemy spawning
+	void SpawnEnemies();
+	void FindEnemySpawnClass(int _PointsLeft);
+	AActor* FindEnemySpawnTile();
+	void SpawnEnemy(TSubclassOf<AActionActor> enemyClass);
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TMap<int, FFieldObjects> mpEnemyCosts;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	int currentRoomDifficulty = 40;
+	int currentRoomDifficulty = 10;
 };

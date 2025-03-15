@@ -7,7 +7,7 @@
 #include "TileComponent.h"
 #include "TileMapFunctionLibrary.h"
 #include "SpellCastingComponent.h"
-#include "IsPlayer.h"
+#include "IsActionObject.h"
 #include "Kismet/GameplayStatics.h"
 
 void UPlayerPathfindingComponent::BeginPlay()
@@ -38,15 +38,9 @@ void UPlayerPathfindingComponent::StartMove(const FInputActionValue& _Value)
 						ownerSpellcastingComp->IncreaseMana(ownerSpellcastingComp->GetManaPerTurn());
 						ownerSpellcastingComp->RotateHand();
 					}
-				
+					
+					UTileMapFunctionLibrary::UnOccupyTile(GetOwner());
 					MoveOverTime(newLocation);
-						
-					if(IIsPlayer* playerInterface = Cast<IIsPlayer>(GetOwner()))
-					{
-						APawn* ownerPawn = Cast<APawn>(GetOwner());
-						ownerPawn->DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-						playerInterface->GetTurnEndDelegate()->Broadcast(ownerPawn);
-					}
 				}
 			}
 			break;
@@ -59,4 +53,9 @@ void UPlayerPathfindingComponent::StartMove(const FInputActionValue& _Value)
 			break;
 		}
 	}
+}
+
+void UPlayerPathfindingComponent::EndMove()
+{
+	
 }

@@ -13,7 +13,6 @@ AActionEnemy::AActionEnemy()
 
 void AActionEnemy::StartTurn()
 {
-
 	if(mpPlayer)
 	{
 		UTileComponent* startTile = UTileMapFunctionLibrary::GetBelowTile(this)->GetComponentByClass<UTileComponent>();

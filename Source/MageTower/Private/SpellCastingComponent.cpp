@@ -240,7 +240,7 @@ void USpellCastingComponent::SetCastDirection(FVector2D _CastDirection)
 						affectedTilePos.Y = startPos.Y + mCastDirection.Y * (cRange * tileSize);
 					}
 
-					GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("x: %f , y: %f"), affectedTilePos.X, affectedTilePos.Y));
+					//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("x: %f , y: %f"), affectedTilePos.X, affectedTilePos.Y));
 					DrawDebugLine(GetWorld(), affectedTilePos, FVector(affectedTilePos.X, affectedTilePos.Y, affectedTilePos.Z + 1000), FColor::Red, false, 1.f, 0, 2.f);
 				}
 			}	

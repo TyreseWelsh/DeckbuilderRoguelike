@@ -30,6 +30,8 @@ public:
 	void DisableMovement() { mbCanMove = false; }
 
 	virtual void FindPath(UTileComponent* _StartTile, UTileComponent* _TargetTile);
+	virtual void EndMove();
+	virtual void ClearMoveTimer();
 
 protected:
 	// Pathfinding
@@ -52,6 +54,7 @@ protected:
 	float mMoveIncrement = 0.1f;
 	float mMoveAlpha;
 	bool mbCanMove = true;
+	int mMoveAttempts;
 	FTimerHandle mMoveTimer;
 	FTimerDelegate mMoveDelegate;
 };

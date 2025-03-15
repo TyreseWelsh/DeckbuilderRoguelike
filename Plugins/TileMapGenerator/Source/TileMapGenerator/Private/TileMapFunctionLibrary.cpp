@@ -31,7 +31,6 @@ AActor* UTileMapFunctionLibrary::GetBelowTile(FVector _StartingPos, UWorld* _Cur
 	FHitResult hitResult;
 	FVector traceEnd = FVector(_StartingPos.X, _StartingPos.Y, _StartingPos.Z - 1000);
 	_CurrentWorld->LineTraceSingleByChannel(hitResult, _StartingPos, traceEnd, ECC_Visibility);
-	DrawDebugLine(_CurrentWorld, _StartingPos, traceEnd, FColor::Orange, true);
 	
 	if (IsValid(hitResult.GetActor()))
 	{

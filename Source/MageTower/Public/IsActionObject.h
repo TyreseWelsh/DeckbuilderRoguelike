@@ -4,23 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "IsPlayer.generated.h"
+#include "IsActionObject.generated.h"
 
 //DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerTurnStart, APawn* /*_Player*/);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerTurnEnd, APawn* /*_Player*/);
+DECLARE_MULTICAST_DELEGATE(FOnTurnEnd);
 
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UIsPlayer : public UInterface
+class UIsActionObject : public UInterface
 {
 	GENERATED_BODY()
 };
 
 /**
- * 
+ * Should be renamed to encompass all "ActionActors"
  */
-class MAGETOWER_API IIsPlayer
+class MAGETOWER_API IIsActionObject
 {
 	GENERATED_BODY()
 
@@ -28,5 +28,5 @@ class MAGETOWER_API IIsPlayer
 public:
 	//FOnPlayerTurnStart* GetTurnStartDelegate();
 	virtual void StartTurn();
-	virtual FOnPlayerTurnEnd* GetTurnEndDelegate();
+	virtual FOnTurnEnd* GetTurnEndDelegate();
 };
