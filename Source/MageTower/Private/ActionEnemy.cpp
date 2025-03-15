@@ -18,6 +18,7 @@ void AActionEnemy::StartTurn()
 		UTileComponent* startTile = UTileMapFunctionLibrary::GetBelowTile(this)->GetComponentByClass<UTileComponent>();
 		UTileComponent* targetTile = UTileMapFunctionLibrary::GetBelowTile(mpPlayer)->GetComponentByClass<UTileComponent>();
 
-		mpPathfindingComponent->FindPath(startTile, targetTile);
+		//mpPathfindingComponent->FindPath(startTile, targetTile, 1);
+		mpPathfindingComponent->FindPathToAttack(startTile, targetTile, 2, 1);
 	}
 }

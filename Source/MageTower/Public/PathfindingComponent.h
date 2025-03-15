@@ -29,7 +29,10 @@ public:
 	void EnableMovement() { mbCanMove = true; }
 	void DisableMovement() { mbCanMove = false; }
 
-	virtual void FindPath(UTileComponent* _StartTile, UTileComponent* _TargetTile);
+	virtual void FindPath(UTileComponent* _StartTile, UTileComponent* _TargetTile, int _StoppingRange);
+	virtual void FindPathToAttack(UTileComponent* _StartTile, UTileComponent* _TargetTile, int _AttackRange, int _AttackWidth);
+	virtual bool CheckAttackArea(UTileComponent* _CurrentTile, UTileComponent* _TargetTile, int _AttackRange, int _AttackWidth);
+	
 	virtual void EndMove();
 	virtual void ClearMoveTimer();
 

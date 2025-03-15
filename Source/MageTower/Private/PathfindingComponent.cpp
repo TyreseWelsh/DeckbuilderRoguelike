@@ -26,7 +26,7 @@ void UPathfindingComponent::BeginPlay()
 	// ...
 }
 
-void UPathfindingComponent::FindPath(UTileComponent* _StartTile, UTileComponent* _TargetTile)
+void UPathfindingComponent::FindPath(UTileComponent* _StartTile, UTileComponent* _TargetTile, int _StoppingRange)
 {
 	mpOpenSet.Empty();
 	mpClosedSet.Empty();
@@ -50,7 +50,7 @@ void UPathfindingComponent::FindPath(UTileComponent* _StartTile, UTileComponent*
 		mpClosedSet.Add(currentTile);
 		
 		float distToTarget = FVector::Distance(currentTile->GetOwner()->GetActorLocation(), _TargetTile->GetOwner()->GetActorLocation());
-		if(distToTarget == 100)
+		if(distToTarget == _StoppingRange * 100)
 		{
 			// End pathfinding and calculate path
 			RetracePath(_StartTile, currentTile);
@@ -81,6 +81,103 @@ void UPathfindingComponent::FindPath(UTileComponent* _StartTile, UTileComponent*
 			}
 		}
 	}
+}
+
+void UPathfindingComponent::FindPathToAttack(UTileComponent* _StartTile, UTileComponent* _TargetTile, int _AttackRange,
+	int _AttackWidth)
+{
+	mpOpenSet.Empty();
+	mpClosedSet.Empty();
+	
+	_StartTile->mGCost = 0;
+	mpOpenSet.Add(_StartTile);
+
+	while(mpOpenSet.Num() > 0)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%s : CHECK"), *GetOwner()->GetName()));
+
+		// Find path
+		UTileComponent* currentTile = mpOpenSet[0];
+		for(int i = 1; i < mpOpenSet.Num(); i++)
+		{
+			if(mpOpenSet[i]->mFCost < currentTile->mFCost or
+				(mpOpenSet[i]->mFCost == currentTile->mFCost && mpOpenSet[i]->mHCost < currentTile->mHCost))
+			{
+				currentTile = mpOpenSet[i];
+			}
+		}
+		mpOpenSet.Remove(currentTile);
+		mpClosedSet.Add(currentTile);
+
+		
+		if(CheckAttackArea(currentTile, _TargetTile, _AttackRange, _AttackWidth))
+		{
+
+			// End pathfinding and calculate path
+			RetracePath(_StartTile, currentTile);
+			return;
+		}
+		
+		// Add valid neighbour tiles to open set
+		for(UTileComponent* NeighbourTileComponent : currentTile->mpNeighbourTiles)
+		{
+			if(!NeighbourTileComponent->mbIsWalkable or mpClosedSet.Contains(NeighbourTileComponent))
+			{
+				continue;
+			}
+	
+			int NewNeighbourGCost = abs(currentTile->mGCost + GetDistance(currentTile, NeighbourTileComponent));
+			if(NewNeighbourGCost < NeighbourTileComponent->mGCost or !mpOpenSet.Contains(NeighbourTileComponent))
+			{
+				NeighbourTileComponent->mGCost = NewNeighbourGCost;
+				NeighbourTileComponent->mHCost = abs(GetDistance(NeighbourTileComponent, _TargetTile));
+				
+				NeighbourTileComponent->mFCost = NeighbourTileComponent->mGCost + NeighbourTileComponent->mHCost;
+				NeighbourTileComponent->mpParentTile = currentTile;
+
+				if(!mpOpenSet.Contains(NeighbourTileComponent))
+				{
+					mpOpenSet.Add(NeighbourTileComponent);
+				}
+			}
+		}
+	}
+}
+
+bool UPathfindingComponent::CheckAttackArea(UTileComponent* _CurrentTile, UTileComponent* _TargetTile, int _AttackRange, int _AttackWidth)
+{
+	int tileSize = 100;
+	TArray<FVector2D> castDirections = {FVector2D(0, -1.f),FVector2D(0, 1.f), FVector2D(1.f, 0), FVector2D(-1.f, 0)};
+	FVector startPos = _CurrentTile->GetOwner()->GetActorLocation();
+
+	for(FVector2D castDirection : castDirections)
+	{
+		for(int cRange = 1; cRange <= _AttackRange; cRange++)
+		{
+			for (int cWidth = -_AttackWidth; cWidth <= _AttackWidth; cWidth++)
+			{
+				FVector affectedTilePos;
+				if(castDirection.X != 0 && castDirection.Y == 0) 
+				{
+					affectedTilePos.X = startPos.X + castDirection.X * (cRange * tileSize);
+					affectedTilePos.Y = startPos.Y + cWidth * tileSize;
+				}
+				else if(castDirection.X == 0 && castDirection.Y != 0)
+				{
+					affectedTilePos.X = startPos.X + cWidth * tileSize;
+					affectedTilePos.Y = startPos.Y + castDirection.Y * (cRange * tileSize);
+				}
+				affectedTilePos.Z = _TargetTile->GetOwner()->GetActorLocation().Z;
+				
+				if(affectedTilePos == _TargetTile->GetOwner()->GetActorLocation())
+				{
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 void UPathfindingComponent::EndMove()
